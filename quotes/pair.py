@@ -12,27 +12,27 @@ class BotPair:
     def create_token(self, amount: float):
         """Crée une instance de Token pour la devise de base de cette paire."""
         from quotes.coin import Token  # Importation locale
-        return Token(amount, self.base_symbol)
+        return Token(amount, self.base_symbol, _from_factory=True)
 
     def create_price(self, value: float):
         """Crée une instance de Price pour cette paire."""
         from quotes.price import Price  # Importation locale
-        return Price(value, self.base_symbol, self.quote_symbol)
+        return Price(value, self.base_symbol, self.quote_symbol, _from_factory=True)
 
     def create_usd(self, amount: float):
         """Crée une instance de USD pour la devise de cotation de cette paire."""
         from quotes.usd import USD  # Importation locale
-        return USD(amount, self.quote_symbol)
+        return USD(amount, self.quote_symbol, _from_factory=True)
 
     # Si vous voulez des zéros spécifiques à la paire, vous les créeriez ici
     def zero_token(self):
         from quotes.coin import Token
-        return Token(0.0, self.base_symbol)
+        return Token(0.0, self.base_symbol, _from_factory=True)
 
     def zero_usd(self):
         from quotes.usd import USD
-        return USD(0.0, self.quote_symbol)
+        return USD(0.0, self.quote_symbol, _from_factory=True)
 
     def zero_price(self):
         from quotes.price import Price
-        return Price(0.0, self.base_symbol, self.quote_symbol)
+        return Price(0.0, self.base_symbol, self.quote_symbol, _from_factory=True)

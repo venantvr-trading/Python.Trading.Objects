@@ -11,7 +11,7 @@ class Token(Quote):
     tout en respectant les types et en assurant la cohérence dans les opérations.
     """
 
-    def __init__(self, amount: float, base_symbol: str):
+    def __init__(self, amount: float, base_symbol: str, _from_factory: bool = False):
         """
         Initialise une instance de $TOKEN avec un montant.
 
@@ -21,7 +21,10 @@ class Token(Quote):
         Exception:
         TypeError: Si amount n'est pas un float.
         """
-        super().__init__(amount)
+        if not _from_factory:
+            raise TypeError("Use BotPair.create_token() to instantiate Token.")
+
+        super().__init__(amount, _from_factory)
         bot_assert(amount, float)
 
         self._Token__base = base_symbol  # Stocke le symbole de base

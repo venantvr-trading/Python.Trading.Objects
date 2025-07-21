@@ -9,7 +9,7 @@ class USD(Quote):
     """
     ZERO = None
 
-    def __init__(self, amount: float, quote_symbol: str):
+    def __init__(self, amount: float, quote_symbol: str, _from_factory: bool = False):
         """
         Initialise une instance de USD avec un montant.
 
@@ -19,7 +19,10 @@ class USD(Quote):
         Exception:
         TypeError: Si amount n'est pas un float.
         """
-        super().__init__(amount)
+        if not _from_factory:
+            raise TypeError("Use BotPair.create_token() to instantiate Token.")
+
+        super().__init__(amount, _from_factory)
         bot_assert(amount, (float, int))
 
         self.__quote = quote_symbol

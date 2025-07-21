@@ -16,11 +16,14 @@ class Quote(ABC):
         "USD": 2
     }
 
-    def __init__(self, amount: float):
+    def __init__(self, amount: float, _from_factory: bool = False):
         """
         Initialise une instance de Quote avec une précision définie par les classes filles
         et applique la troncature de la valeur à cette précision.
         """
+        if not _from_factory:
+            raise TypeError("Use BotPair.create_token() to instantiate Token.")
+
         child_class = self.get_child_class()
 
         # Détermine la précision en fonction de la classe, avec une valeur par défaut de 8 pour Token et 2 pour les autres.

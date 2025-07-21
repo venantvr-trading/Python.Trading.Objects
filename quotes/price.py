@@ -14,7 +14,7 @@ class Price:
     # Constante ZERO représentant un prix de 0.0 avec une devise nulle
     ZERO = None
 
-    def __init__(self, price: float, base_symbol: str, quote_symbol: str):
+    def __init__(self, price: float, base_symbol: str, quote_symbol: str, _from_factory: bool = False):
         """
         Initialise une instance de Price avec un montant de prix.
 
@@ -26,6 +26,9 @@ class Price:
         Exception:
         TypeError: Si le montant du prix n'est pas un float ou un int.
         """
+        if not _from_factory:
+            raise TypeError("Use BotPair.create_token() to instantiate Token.")
+
         bot_assert(price, (float, int))
 
         self.price = float(price)
