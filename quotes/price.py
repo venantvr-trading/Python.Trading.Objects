@@ -5,29 +5,26 @@ from quotes.quote import bot_assert
 
 class Price:
     """
-    Classe Price représentant un prix associé à une devise (quote).
+    Représente le prix d'une devise de base par rapport à une devise de cotation.
 
-    Fournit des méthodes pour manipuler le prix, effectuer des opérations arithmétiques
-    telles que la soustraction, la multiplication, et la division, ainsi que comparer différents prix.
+    Fournit des méthodes pour manipuler le prix et effectuer des opérations arithmétiques.
     """
-
-    # Constante ZERO représentant un prix de 0.0 avec une devise nulle
-    ZERO = None
 
     def __init__(self, price: float, base_symbol: str, quote_symbol: str, _from_factory: bool = False):
         """
-        Initialise une instance de Price avec un montant de prix.
+        Initialise une instance de Price.
 
         Paramètres:
         price (float): Le montant du prix.
         base_symbol (str): Le symbole de la devise de base (ex: BTC).
         quote_symbol (str): Le symbole de la devise de cotation (ex: USD).
+        _from_factory (bool): Indique si l'instance est créée via une factory (interne).
 
         Exception:
-        TypeError: Si le montant du prix n'est pas un float ou un int.
+        TypeError: Si l'instanciation n'est pas faite via BotPair.create_price().
         """
         if not _from_factory:
-            raise TypeError("Use BotPair.create_token() to instantiate Token.")
+            raise TypeError("Use BotPair.create_price() to instantiate Price.")
 
         bot_assert(price, (float, int))
 
@@ -35,32 +32,16 @@ class Price:
         self.__base = base_symbol
         self.__quote = quote_symbol
 
-        if Price.ZERO is None:
-            Price.ZERO = Price(0.0, self.__base, self.__quote)
-
     def get_base(self) -> str:
-        """
-        Retourne le symbole de la devise de base.
-
-        :return: Le symbole de la devise de base.
-        """
+        """Retourne le symbole de la devise de base du prix."""
         return self.__base
 
     def get_quote(self) -> str:
-        """
-        Retourne le symbole de la devise de cotation.
-
-        :return: Le symbole de la devise de cotation.
-        """
+        """Retourne le symbole de la devise de cotation du prix."""
         return self.__quote
 
     def __str__(self):
-        """
-        Retourne une représentation en chaîne de caractères du prix.
-
-        Retourne:
-        str: Le montant du prix avec la devise (par défaut en USD dans cet exemple).
-        """
+        """Retourne une représentation formatée du prix."""
         return f"{self.price:.2f} {self.__base}/{self.__quote}"
 
     def __add__(self, other):
@@ -71,73 +52,68 @@ class Price:
         other (Price): L'autre instance de Price à ajouter.
 
         Retourne:
-        Price: Une nouvelle instance de Price représentant la somme.
+        Price: Une nouvelle instance représentant la somme.
 
         Exception:
-        TypeError: Si other n'est pas une instance de Price.
+        TypeError: Si 'other' n'est pas une instance de Price.
         """
         bot_assert(other, Price)
-
-        return Price(self.price + other.price, self.__base, self.__quote)
+        return Price(self.price + other.price, self.__base, self.__quote, _from_factory=True)
 
     def __sub__(self, other):
         """
-        Soustraction de deux prix, en supposant qu'ils aient la même devise.
+        Soustrait une instance de Price d'une autre.
 
         Paramètres:
-        other (Price): Une autre instance de Price à soustraire.
+        other (Price): L'instance à soustraire.
 
         Retourne:
-        Price: Une nouvelle instance de Price représentant la différence.
+        Price: Une nouvelle instance représentant la différence.
 
         Exception:
-        TypeError: Si l'objet other n'est pas de type Price.
+        TypeError: Si 'other' n'est pas de type Price.
         """
         bot_assert(other, Price)
-
-        return Price(self.price - other.price, self.__base, self.__quote)
+        return Price(self.price - other.price, self.__base, self.__quote, _from_factory=True)
 
     def __truediv__(self, other):
         """
-        Division d'un prix par un nombre ou un autre Price.
+        Divise un Price par un nombre ou un autre Price.
 
         Paramètres:
         other (float, int, Price): Le diviseur.
 
         Retourne:
-        Price ou float: Si other est un nombre, retourne une nouvelle instance de Price.
-                         Si other est une instance de Price, retourne un float représentant le ratio entre les deux prix.
+        Price ou float: Si 'other' est un nombre, retourne un nouveau Price.
+                        Si 'other' est un Price, retourne un float (le ratio).
 
         Exception:
-        TypeError: Si l'objet other n'est pas un float, int ou Price.
+        TypeError: Si 'other' n'est pas un float, int ou Price.
         ZeroDivisionError: Si la division par zéro est tentée.
         """
         if isinstance(other, (int, float)):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Price(self.price / other, self.__base, self.__quote)
-
+            return Price(self.price / other, self.__base, self.__quote, _from_factory=True)
         if isinstance(other, Price):
             if other.price == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return self.price / other.price
-
         raise TypeError(f"L'opérande doit être un int, float ou Price")
 
     def __mul__(self, other):
         """
-        Multiplication de Price par un nombre ou une quantité de tokens.
+        Multiplie Price par un nombre ou une instance de Token.
 
         Paramètres:
-        other (float, int, Token): Un nombre flottant ou entier pour multiplier le prix,
-                                      ou un objet Token pour multiplier par un nombre de tokens.
+        other (float, int, Token): Le multiplicateur.
 
         Retourne:
-        Price ou USD: Si other est un nombre, retourne une nouvelle instance de Price.
-                       Si other est une instance de Token, retourne un montant en USD.
+        Price ou USD: Si 'other' est un nombre, retourne un nouveau Price.
+                      Si 'other' est un Token, retourne un montant en USD.
 
         Exception:
-        TypeError: Si l'objet other n'est pas un float, int ou Token.
+        TypeError: Si 'other' n'est pas un float, int ou Token.
         """
         from quotes.usd import USD
         from quotes.coin import Token
@@ -145,39 +121,27 @@ class Price:
         bot_assert(other, (int, float, Token))
 
         if isinstance(other, (int, float)):
-            return Price(self.price * other, self.__base, self.__quote)
-
+            return Price(self.price * other, self.__base, self.__quote, _from_factory=True)
         if isinstance(other, Token):
             amount = self.price * other.amount
-            return USD(amount, self.__quote)
-
-        # Should not be reached due to bot_assert, but for explicit return:
-        return NotImplemented  # Or raise TypeError as per original design
+            return USD(amount, self.__quote, _from_factory=True)
+        return NotImplemented
 
     def __eq__(self, other):
         """
         Vérifie si deux instances de Price sont égales.
 
         Paramètres:
-        other (Price): Une autre instance de Price à comparer.
+        other (Price): L'autre instance de Price à comparer.
 
         Retourne:
-        bool: True si les montants de prix sont égaux, False sinon.
+        bool: True si les prix sont égaux, False sinon.
         """
         bot_assert(other, Price)
-
         return self.price == other.price
 
     def __ne__(self, other):
-        """
-        Vérifie si deux instances de Price ne sont pas égales.
-
-        Paramètres:
-        other (Price): Une autre instance de Price à comparer.
-
-        Retourne:
-        bool: True si les montants de prix sont différents, False sinon.
-        """
+        """Vérifie si deux instances de Price ne sont pas égales."""
         return not self.__eq__(other)
 
     def __lt__(self, other):
@@ -185,25 +149,16 @@ class Price:
         Vérifie si une instance de Price est inférieure à une autre.
 
         Paramètres:
-        other (Price): Une autre instance de Price à comparer.
+        other (Price): L'autre instance de Price à comparer.
 
         Retourne:
-        bool: True si le montant du prix est inférieur, False sinon.
+        bool: True si le prix est inférieur, False sinon.
         """
         bot_assert(other, Price)
-
         return self.price < other.price
 
     def __le__(self, other):
-        """
-        Vérifie si une instance de Price est inférieure ou égale à une autre.
-
-        Paramètres:
-        other (Price): Une autre instance de Price à comparer.
-
-        Retourne:
-        bool: True si le montant du prix est inférieur ou égal, False sinon.
-        """
+        """Vérifie si une instance de Price est inférieure ou égale à une autre."""
         return self.__lt__(other) or self.__eq__(other)
 
     def __gt__(self, other):
@@ -211,25 +166,16 @@ class Price:
         Vérifie si une instance de Price est supérieure à une autre.
 
         Paramètres:
-        other (Price): Une autre instance de Price à comparer.
+        other (Price): L'autre instance de Price à comparer.
 
         Retourne:
-        bool: True si le montant du prix est supérieur, False sinon.
+        bool: True si le prix est supérieur, False sinon.
         """
         bot_assert(other, Price)
-
         return self.price > other.price
 
     def __ge__(self, other):
-        """
-        Vérifie si une instance de Price est supérieure ou égale à une autre.
-
-        Paramètres:
-        other (Price): Une autre instance de Price à comparer.
-
-        Retourne:
-        bool: True si le montant du prix est supérieur ou égal, False sinon.
-        """
+        """Vérifie si une instance de Price est supérieure ou égale à une autre."""
         return self.__gt__(other) or self.__eq__(other)
 
     def to_dict(self):
