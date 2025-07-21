@@ -1,21 +1,14 @@
-import ctypes
 import json
 import math
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Type
 
 
-class Quote(ctypes.Structure):
+class Quote(ABC):
     """
     Classe parent pour les devises, avec des fonctionnalités pour manipuler les montants
-    et appliquer des précisions spécifiques aux classes filles comme $TOKEN ou USD.
+    et appliquer des précisions spécifiques aux classes filles comme Token ou USD.
     """
-    _fields_ = [
-        ("amount", ctypes.c_double),
-        # Utilisation de c_double pour gérer des montants flottants
-        ("precision", ctypes.c_int)
-        # Utilisation de c_int pour la précision
-    ]
 
     # Dictionnaire pour stocker les précisions associées aux classes
     precisions = {
@@ -23,17 +16,21 @@ class Quote(ctypes.Structure):
         "USD": 2
     }
 
-    def __init__(self, amount):
+    def __init__(self, amount: float):
         """
         Initialise une instance de Quote avec une précision définie par les classes filles
         et applique la troncature de la valeur à cette précision.
         """
-        super().__init__()
         child_class = self.get_child_class()
 
+        # Détermine la précision en fonction de la classe, avec une valeur par défaut de 8 pour Token et 2 pour les autres.
         self.precision = Quote.precisions.get(child_class.__name__, 8 if child_class.__name__ == "Token" else 2)
-        discrepancy = Quote.precisions.get(child_class.__name__, self.precision)
-        self.precision = min(self.precision, discrepancy)
+
+        # S'assure que la précision utilisée n'est pas supérieure à celle définie dans Quote.precisions (si présente)
+        # La ligne originale `discrepancy = Quote.precisions.get(child_class.__name__, self.precision)`
+        # et `self.precision = min(self.precision, discrepancy)` est redondante ou incorrecte
+        # dans son intention si le but est juste d'appliquer la précision définie pour la classe.
+        # J'ai simplifié cela pour que la précision soit directement celle de `precisions` ou la valeur par défaut.
 
         # Troncature de la valeur à la précision définie
         self.amount = self.truncate_to_precision(amount)
@@ -47,7 +44,7 @@ class Quote(ctypes.Structure):
         """
         return self.__class__
 
-    def truncate_to_precision(self, amount: float) -> ctypes.c_double:
+    def truncate_to_precision(self, amount: float) -> float:
         """
         Tronque une valeur à une précision spécifique sans arrondi.
 
@@ -55,17 +52,17 @@ class Quote(ctypes.Structure):
         amount (float): Le montant à tronquer.
 
         Retourne:
-        ctypes.c_double: Le montant tronqué à la précision définie.
+        float: Le montant tronqué à la précision définie.
         """
         bot_assert(amount, (float, int))
 
         factor = 10 ** self.precision
-        # Troncature de la valeur et conversion explicite en c_double
+        # Troncature de la valeur
         truncated_amount = math.floor(amount * factor) / factor
-        return ctypes.c_double(truncated_amount)
+        return float(truncated_amount)
 
     @staticmethod
-    def set_precision(class_name, precision):
+    def set_precision(class_name: str, precision: int):
         """
         Définit la précision pour une classe donnée.
         :param class_name: Nom de la classe.
@@ -75,121 +72,61 @@ class Quote(ctypes.Structure):
 
     def __eq__(self, other):
         bot_assert(other, Quote)
-
         return self.amount == other.amount
 
     @abstractmethod
     def __str__(self):
         """
-        Retourne une représentation en chaîne de caractères du montant en USDC.
-
-        Retourne:
-        str: Le montant de la quote suivi de 'USDC'.
+        Retourne une représentation en chaîne de caractères du montant.
         """
         pass
 
     @abstractmethod
     def __lt__(self, other):
         """
-        Vérifie si l'instance courante est inférieure à une autre instance de USDC ou à un nombre.
-
-        Paramètres:
-        other (USDC ou float): L'autre montant à comparer.
-
-        Retourne:
-        bool: True si l'instance courante est inférieure, False sinon.
-
-        Exception:
-        TypeError: Si other n'est pas un USDC ou un nombre.
+        Vérifie si l'instance courante est inférieure à une autre instance ou à un nombre.
         """
         pass
 
     @abstractmethod
     def __add__(self, other):
         """
-        Additionne deux instances de USDC.
-
-        Paramètres:
-        other (USDC): L'autre instance de USDC à ajouter.
-
-        Retourne:
-        USDC: Une nouvelle instance de USDC représentant la somme.
-
-        Exception:
-        TypeError: Si other n'est pas une instance de USDC.
+        Additionne deux instances.
         """
         pass
 
     @abstractmethod
     def __radd__(self, other):
         """
-        Gère la somme cumulée lorsque USDC est à droite de l'opérateur.
-
-        Paramètres:
-        other (int, float ou USDC): L'autre opérande.
-
-        Retourne:
-        USDC: Une nouvelle instance de USDC représentant la somme.
+        Gère la somme cumulée lorsque l'instance est à droite de l'opérateur.
         """
         pass
 
     @abstractmethod
     def __sub__(self, other):
         """
-        Soustrait une instance de USDC d'une autre.
-
-        Paramètres:
-        other (USDC): L'autre instance de USDC à soustraire.
-
-        Retourne:
-        USDC: Une nouvelle instance de USDC représentant la différence.
-
-        Exception:
-        TypeError: Si other n'est pas une instance de USDC.
+        Soustrait une instance d'une autre.
         """
         pass
 
     @abstractmethod
     def __neg__(self):
         """
-        Retourne le montant négatif de l'instance courante de USDC.
-
-        Retourne:
-        USDC: Une nouvelle instance de USDC représentant le montant négatif.
+        Retourne le montant négatif de l'instance courante.
         """
         pass
 
     @abstractmethod
     def __mul__(self, other):
         """
-        Multiplie l'instance de USDC par un nombre.
-
-        Paramètres:
-        other (float): Le nombre à multiplier par le montant en USDC.
-
-        Retourne:
-        USDC: Une nouvelle instance de USDC représentant le résultat.
-
-        Exception:
-        TypeError: Si other n'est pas un float.
+        Multiplie l'instance par un nombre ou une autre instance de devise/prix.
         """
         pass
 
     @abstractmethod
     def __truediv__(self, other):
         """
-        Divise l'instance de USDC par un nombre, une autre instance de USDC, ou un prix.
-
-        Paramètres:
-        other (int, float, USDC ou Price): Le diviseur.
-
-        Retourne:
-        USDC ou float: Si other est un nombre, retourne une nouvelle instance de USDC.
-                       Si other est un USDC ou Price, retourne un float représentant le ratio.
-
-        Exception:
-        TypeError: Si other n'est pas un int, float, USDC ou Price.
-        ZeroDivisionError: Si une division par zéro est tentée.
+        Divise l'instance par un nombre, une autre instance de devise, ou un prix.
         """
         pass
 

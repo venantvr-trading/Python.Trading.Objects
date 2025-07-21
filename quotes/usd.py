@@ -9,7 +9,7 @@ class USD(Quote):
     """
     ZERO = None
 
-    def __init__(self, amount: float, quote_symbol):
+    def __init__(self, amount: float, quote_symbol: str):
         """
         Initialise une instance de USD avec un montant.
 
@@ -23,6 +23,9 @@ class USD(Quote):
         bot_assert(amount, (float, int))
 
         self.__quote = quote_symbol
+
+        if USD.ZERO is None:
+            USD.ZERO = USD(0.0, self.__quote)  # Initialise ZERO avec la devise correcte
 
     def get_quote(self) -> str:
         """
@@ -87,7 +90,12 @@ class USD(Quote):
         Retourne:
         USD: Une nouvelle instance de USD représentant la somme.
         """
-        return self.__add__(other)
+        # La méthode __add__ gère déjà l'assertion de type pour 'other'
+        # et ne doit pas être appelée directement avec 'other' tel quel s'il n'est pas de type USD.
+        # Ici, nous nous attendons à ce que 'other' soit un int ou un float pour __radd__.
+        if isinstance(other, (int, float)):
+            return USD(self.amount + other, self.__quote)
+        return NotImplemented  # Indique que l'opération n'est pas implémentée pour d'autres types
 
     def __sub__(self, other):
         """
@@ -141,7 +149,7 @@ class USD(Quote):
 
         Retourne:
         USD ou float: Si other est un nombre, retourne une nouvelle instance de USD.
-                       Si other est un USD ou Price, retourne un float représentant le ratio.
+                         Si other est un USD ou Price, retourne un float représentant le ratio.
 
         Exception:
         TypeError: Si other n'est pas un int, float, USD ou Price.
@@ -163,7 +171,9 @@ class USD(Quote):
         if isinstance(other, Price):
             if other.price == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Token(self.amount / other.price, self.__base)
+            # Lors de la division d'USD par un Price (ex: USD/BTC), on obtient une quantité de Token (BTC)
+            # Nous avons besoin de la base_symbol du Price pour créer le Token résultant.
+            return Token(self.amount / other.price, other.get_base())
 
         raise TypeError(f"L'opérande doit être un int, float, {self.__quote} ou Price")
 

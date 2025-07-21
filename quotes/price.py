@@ -1,56 +1,53 @@
-import ctypes
 import json
 
 from quotes.quote import bot_assert
 
 
-class Price(ctypes.Structure):
+class Price:
     """
     Classe Price représentant un prix associé à une devise (quote).
 
     Fournit des méthodes pour manipuler le prix, effectuer des opérations arithmétiques
     telles que la soustraction, la multiplication, et la division, ainsi que comparer différents prix.
     """
-    # Définition des champs pour `ctypes`
-    _fields_ = [
-        ("price", ctypes.c_double)
-        # Utilisation de `c_double` pour représenter le prix
-    ]
 
     # Constante ZERO représentant un prix de 0.0 avec une devise nulle
     ZERO = None
 
-    def __init__(self, price: float, base_symbol, quote_symbol):
+    def __init__(self, price: float, base_symbol: str, quote_symbol: str):
         """
         Initialise une instance de Price avec un montant de prix.
 
         Paramètres:
         price (float): Le montant du prix.
+        base_symbol (str): Le symbole de la devise de base (ex: BTC).
+        quote_symbol (str): Le symbole de la devise de cotation (ex: USD).
 
         Exception:
         TypeError: Si le montant du prix n'est pas un float ou un int.
         """
-        super().__init__()
-        bot_assert(price, float)
+        bot_assert(price, (float, int))
 
-        self.price = ctypes.c_double(float(price))
+        self.price = float(price)
         self.__base = base_symbol
         self.__quote = quote_symbol
-        # Utilisation de `c_double` pour le prix
+
+        if Price.ZERO is None:
+            Price.ZERO = Price(0.0, self.__base, self.__quote)
 
     def get_base(self) -> str:
         """
-        Retourne la valeur par défaut actuelle du token.
+        Retourne le symbole de la devise de base.
 
-        :return: Le token par défaut.
+        :return: Le symbole de la devise de base.
         """
         return self.__base
 
     def get_quote(self) -> str:
         """
-        Retourne la valeur par défaut actuelle du token.
+        Retourne le symbole de la devise de cotation.
 
-        :return: Le token par défaut.
+        :return: Le symbole de la devise de cotation.
         """
         return self.__quote
 
@@ -106,14 +103,12 @@ class Price(ctypes.Structure):
 
         Retourne:
         Price ou float: Si other est un nombre, retourne une nouvelle instance de Price.
-                        Si other est une instance de Price, retourne un float représentant le ratio entre les deux prix.
+                         Si other est une instance de Price, retourne un float représentant le ratio entre les deux prix.
 
         Exception:
         TypeError: Si l'objet other n'est pas un float, int ou Price.
         ZeroDivisionError: Si la division par zéro est tentée.
         """
-        bot_assert(other, (int, float, Price))
-
         if isinstance(other, (int, float)):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
@@ -124,20 +119,22 @@ class Price(ctypes.Structure):
                 raise ZeroDivisionError("Division par zéro interdite")
             return self.price / other.price
 
+        raise TypeError(f"L'opérande doit être un int, float ou Price")
+
     def __mul__(self, other):
         """
         Multiplication de Price par un nombre ou une quantité de tokens.
 
         Paramètres:
-        other (float, int, Quantity): Un nombre flottant ou entier pour multiplier le prix,
-                                      ou un objet Quantity pour multiplier par un nombre de tokens.
+        other (float, int, Token): Un nombre flottant ou entier pour multiplier le prix,
+                                      ou un objet Token pour multiplier par un nombre de tokens.
 
         Retourne:
         Price ou USD: Si other est un nombre, retourne une nouvelle instance de Price.
-                       Si other est une instance de Quantity, retourne un montant en USD.
+                       Si other est une instance de Token, retourne un montant en USD.
 
         Exception:
-        TypeError: Si l'objet other n'est pas un float, int ou Quantity.
+        TypeError: Si l'objet other n'est pas un float, int ou Token.
         """
         from quotes.usd import USD
         from quotes.coin import Token
@@ -150,6 +147,9 @@ class Price(ctypes.Structure):
         if isinstance(other, Token):
             amount = self.price * other.amount
             return USD(amount, self.__quote)
+
+        # Should not be reached due to bot_assert, but for explicit return:
+        return NotImplemented  # Or raise TypeError as per original design
 
     def __eq__(self, other):
         """

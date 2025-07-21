@@ -24,7 +24,7 @@ class Token(Quote):
         super().__init__(amount)
         bot_assert(amount, float)
 
-        self.__base = base_symbol
+        self._Token__base = base_symbol  # Stocke le symbole de base
 
     def get_base(self) -> str:
         """
@@ -32,7 +32,7 @@ class Token(Quote):
 
         :return: Le token par défaut.
         """
-        return self.__base
+        return self._Token__base
 
     def __str__(self):
         """
@@ -41,7 +41,7 @@ class Token(Quote):
         Retourne:
         str: Le montant de la quote suivi de '$TOKEN'.
         """
-        return f"{self.amount:.8f} {self.__base}"
+        return f"{self.amount:.8f} {self._Token__base}"
         # Représentation avec 8 décimales pour Bitcoin
 
     def __lt__(self, other):
@@ -61,7 +61,7 @@ class Token(Quote):
             return self.amount < other.amount
         elif isinstance(other, float):
             return self.amount < other
-        raise TypeError(f"L'opérande doit être une instance de {self.__base} ou un nombre (float)")
+        raise TypeError(f"L'opérande doit être une instance de {self._Token__base} ou un nombre (float)")
 
     def __add__(self, other):
         """
@@ -78,7 +78,21 @@ class Token(Quote):
         """
         bot_assert(other, Token)
 
-        return Token(self.amount + other.amount, self.__base)
+        return Token(self.amount + other.amount, self._Token__base)
+
+    def __radd__(self, other):
+        """
+        Gère la somme cumulée lorsque Token est à droite de l'opérateur.
+
+        Paramètres:
+        other (int, float): L'autre opérande.
+
+        Retourne:
+        Token: Une nouvelle instance de Token représentant la somme.
+        """
+        if isinstance(other, (int, float)):
+            return Token(self.amount + other, self._Token__base)
+        return NotImplemented
 
     def __sub__(self, other):
         """
@@ -95,7 +109,7 @@ class Token(Quote):
         """
         bot_assert(other, Token)
 
-        return Token(self.amount - other.amount, self.__base)
+        return Token(self.amount - other.amount, self._Token__base)
 
     def __neg__(self):
         """
@@ -104,20 +118,21 @@ class Token(Quote):
         Retourne:
         $TOKEN: Une nouvelle instance de $TOKEN représentant le montant négatif.
         """
-        return Token(-self.amount, self.__base)
+        return Token(-self.amount, self._Token__base)
 
     def __mul__(self, other):
         """
-        Multiplie l'instance de $TOKEN par un nombre.
+        Multiplie l'instance de $TOKEN par un nombre ou une instance de Price.
 
         Paramètres:
-        other (float): Le nombre à multiplier par le montant en $TOKEN.
+        other (float ou Price): L'autre opérande à multiplier.
 
         Retourne:
-        $TOKEN: Une nouvelle instance de $TOKEN représentant le résultat.
+        Token ou USD: Si other est un float, retourne une nouvelle instance de Token.
+                      Si other est une instance de Price, retourne un montant en USD.
 
         Exception:
-        TypeError: Si other n'est pas un float.
+        TypeError: Si other n'est ni un float ni une instance de Price.
         """
         from quotes.price import Price
         from quotes.usd import USD
@@ -125,13 +140,13 @@ class Token(Quote):
         bot_assert(other, (float, Price))
 
         if isinstance(other, float):
-            return Token(self.amount * other, self.__base)
+            return Token(self.amount * other, self._Token__base)
 
         if isinstance(other, Price):
-            return USD(self.amount * other.price, self.__quote)
+            return USD(self.amount * other.price, other.get_quote())
 
-    def __radd__(self, other):
-        pass
+        # Should not be reached due to bot_assert, but for explicit return:
+        return NotImplemented  # Or raise TypeError as per original design
 
     def __truediv__(self, other):
         """
@@ -142,7 +157,7 @@ class Token(Quote):
 
         Retourne:
         $TOKEN ou float: Si other est un nombre, retourne une nouvelle instance de $TOKEN.
-                      Si other est une instance de $TOKEN, retourne un float représentant le ratio.
+                         Si other est une instance de $TOKEN, retourne un float représentant le ratio.
 
         Exception:
         TypeError: Si other n'est pas un int, float ou $TOKEN.
@@ -151,14 +166,14 @@ class Token(Quote):
         if isinstance(other, float):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Token(self.amount / other, self.__base)
+            return Token(self.amount / other, self._Token__base)
 
         if isinstance(other, Token):
             if other.amount == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return self.amount / other.amount
 
-        raise TypeError(f"L'opérande doit être un int, float ou {self.__base}")
+        raise TypeError(f"L'opérande doit être un int, float ou {self._Token__base}")
 
     def to_dict(self):
         """Convertit l'objet en dictionnaire."""
