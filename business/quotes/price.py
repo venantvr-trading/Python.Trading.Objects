@@ -1,6 +1,6 @@
 import json
 
-from quotes.assertion import bot_assert
+from business.quotes.assertion import bot_assert
 
 
 class Price:
@@ -115,8 +115,8 @@ class Price:
         Exception:
         TypeError: Si 'other' n'est pas un float, int ou Token.
         """
-        from quotes.usd import USD
-        from quotes.coin import Token
+        from business.quotes.usd import USD
+        from business.quotes.coin import Token
 
         bot_assert(other, (int, float, Token))
 

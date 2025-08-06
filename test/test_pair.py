@@ -1,7 +1,7 @@
-from quotes.coin import Token
-from quotes.pair import BotPair
-from quotes.price import Price
-from quotes.usd import USD
+from business.quotes import Token
+from business.quotes import BotPair
+from business.quotes import Price
+from business.quotes import USD
 
 
 # Tests pour la classe BotPair

@@ -1,7 +1,7 @@
 import json
 
-from quotes.assertion import bot_assert
-from quotes.quote import Quote
+from business.quotes.assertion import bot_assert
+from business.quotes.quote import Quote
 
 
 class USD(Quote):
@@ -145,8 +145,8 @@ class USD(Quote):
         TypeError: Si 'other' n'est pas un type valide.
         ZeroDivisionError: Si une division par zéro est tentée.
         """
-        from quotes.price import Price
-        from quotes.coin import Token
+        from business.quotes.price import Price
+        from business.quotes.coin import Token
 
         if isinstance(other, (int, float)):
             if other == 0:
