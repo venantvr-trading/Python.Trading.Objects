@@ -1,6 +1,6 @@
 import json
 
-from quotes.quote import bot_assert
+from quotes.assertion import bot_assert
 
 
 class Price:
@@ -185,3 +185,30 @@ class Price:
     def to_json(self):
         """Convertit l'objet en JSON."""
         return json.dumps(self.to_dict())
+
+    def is_positive(self) -> bool:
+        """
+        Vérifie si le prix est strictement positif.
+
+        Retourne:
+        bool: True si le prix est > 0, False sinon.
+        """
+        return self.price > 0
+
+    def is_zero(self) -> bool:
+        """
+        Vérifie si le prix est égal à zéro.
+
+        Retourne:
+        bool: True si le prix est == 0, False sinon.
+        """
+        return self.price == 0
+
+    def is_negative(self) -> bool:
+        """
+        Vérifie si le prix est strictement négatif.
+
+        Retourne:
+        bool: True si le prix est < 0, False sinon.
+        """
+        return self.price < 0

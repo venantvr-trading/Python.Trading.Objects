@@ -1,7 +1,8 @@
 import json
 import math
 from abc import ABC, abstractmethod
-from typing import Type
+
+from quotes.assertion import bot_assert
 
 
 class Quote(ABC):
@@ -116,17 +117,29 @@ class Quote(ABC):
         """Convertit l'objet en JSON."""
         return json.dumps(self.to_dict())
 
+    def is_positive(self) -> bool:
+        """
+        Vérifie si le montant de la devise est strictement positif.
 
-def bot_assert(variable, instance: Type or tuple[Type]):
-    """
-    Vérifie le type d'une variable et lève une TypeError si le type ne correspond pas.
+        Retourne:
+        bool: True si le montant est > 0, False sinon.
+        """
+        return self.amount > 0
 
-    Paramètres:
-    variable: La variable à vérifier.
-    instance (Type ou tuple[Type]): Le type ou un tuple de types attendus.
+    def is_zero(self) -> bool:
+        """
+        Vérifie si le montant de la devise est égal à zéro.
 
-    Exception:
-    TypeError: Si le type de la variable ne correspond pas au(x) type(s) attendu(s).
-    """
-    if not isinstance(variable, instance):
-        raise TypeError(f"Le paramètre doit être de type {instance}")
+        Retourne:
+        bool: True si le montant est == 0, False sinon.
+        """
+        return self.amount == 0
+
+    def is_negative(self) -> bool:
+        """
+        Vérifie si le montant de la devise est strictement négatif.
+
+        Retourne:
+        bool: True si le montant est < 0, False sinon.
+        """
+        return self.amount < 0

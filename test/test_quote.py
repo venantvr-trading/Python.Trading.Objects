@@ -2,9 +2,10 @@ import json
 
 import pytest
 
+from quotes.assertion import bot_assert
 from quotes.coin import Token  # Pour tester les classes filles concrètes
 from quotes.pair import BotPair
-from quotes.quote import Quote, bot_assert
+from quotes.quote import Quote
 
 
 # from typing import re # Removed as re.escape is no longer used directly

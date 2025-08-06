@@ -1,6 +1,7 @@
 import json
 
-from quotes.quote import Quote, bot_assert
+from quotes.assertion import bot_assert
+from quotes.quote import Quote
 
 
 class Token(Quote):
