@@ -1,7 +1,7 @@
 import json
 
-from business.quotes.assertion import bot_assert
-from business.quotes.quote import Quote
+from venantvr.quotes.assertion import bot_assert
+from venantvr.quotes.quote import Quote
 
 
 class Token(Quote):
@@ -128,8 +128,8 @@ class Token(Quote):
         Exception:
         TypeError: Si 'other' n'est ni un float ni une instance de Price.
         """
-        from business.quotes.price import Price
-        from business.quotes.usd import USD
+        from venantvr.quotes.price import Price
+        from venantvr.quotes.usd import USD
 
         bot_assert(other, (float, Price))
 

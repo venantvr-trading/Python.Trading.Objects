@@ -2,7 +2,7 @@ import json
 import math
 from abc import ABC, abstractmethod
 
-from business.quotes.assertion import bot_assert
+from venantvr.quotes.assertion import bot_assert
 
 
 class Quote(ABC):

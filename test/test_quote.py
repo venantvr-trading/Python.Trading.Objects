@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from business.quotes.assertion import bot_assert
-from business.quotes import Token  # Pour tester les classes filles concrètes
-from business.quotes import BotPair
-from business.quotes import Quote
+from venantvr.quotes.assertion import bot_assert
+from venantvr.quotes import Token  # Pour tester les classes filles concrètes
+from venantvr.quotes import BotPair
+from venantvr.quotes import Quote
 
 
 # from typing import re # Removed as re.escape is no longer used directly

@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from business.quotes import Token
-from business.quotes import BotPair
-from business.quotes import USD
+from venantvr.quotes import Token
+from venantvr.quotes import BotPair
+from venantvr.quotes import USD
 
 
 # Crée une instance de BotPair pour utiliser les factories
