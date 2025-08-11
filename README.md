@@ -9,13 +9,13 @@ pour créer ces objets en fonction d'une paire de devises.
 
 Cette bibliothèque est conçue pour être installée en tant que package Python.
 
-```bash
+```
 pip install .
 ```
 
 ou, si vous souhaitez l'installer en mode "editable" pour le développement :
 
-```bash
+```
 pip install -e .
 ```
 
