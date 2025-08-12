@@ -13,6 +13,7 @@ class BotPair:
         """
         self.pair = pair
         self.base_symbol, self.quote_symbol = pair.split("/")
+        self.friendly_name = self.base_symbol + self.quote_symbol
 
     def create_token(self, amount: float):
         """Crée une instance de Token pour la devise de base de cette paire."""
