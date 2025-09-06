@@ -1,0 +1,10 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include Makefile
+include pyproject.toml
+include requirements.txt
+recursive-include venantvr *.py
+recursive-include test *.py
+global-exclude *.pyc
+global-exclude __pycache__

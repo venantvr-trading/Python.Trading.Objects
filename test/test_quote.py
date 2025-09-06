@@ -82,7 +82,7 @@ def test_quote_equality_different_types_raises_error(bot_pair):
     """Test que la comparaison d'égalité entre Quote et un type non-Quote lève une TypeError."""
     token = bot_pair.create_token(10.0)
     # Manually escape special characters for regex matching
-    expected_error_message_regex = r"Le paramètre doit être de type <class 'quotes\.quote\.Quote'>"
+    expected_error_message_regex = r"Le paramètre doit être de type <class 'venantvr\.quotes\.quote\.Quote'>"
     with pytest.raises(TypeError, match=expected_error_message_regex):
         _ = token == 10.0  # Comparaison avec un float, pas une instance de Quote
 

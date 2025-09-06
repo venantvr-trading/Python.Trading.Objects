@@ -1,58 +1,74 @@
 # Python.Trading.Objects
 
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen.svg)](#testing)
+
 ## Description
 
-`Python.Trading.Objects` est une bibliothèque Python pour la gestion d'objets de trading, incluant des représentations de montants (tokens, USD), de prix et une fabrique
-pour créer ces objets en fonction d'une paire de devises.
+`Python.Trading.Objects` is a Python library for managing trading objects, including representations of amounts (tokens, USD), prices, and a factory pattern for creating
+these objects based on currency pairs.
+
+The library provides type-safe, precision-controlled financial objects with arithmetic operations, making it ideal for trading applications, financial calculations, and
+cryptocurrency projects.
+
+## Features
+
+- **Type Safety**: Factory pattern ensures consistent types and currency symbols
+- **Precision Control**: Configurable decimal precision for different asset types
+- **Arithmetic Operations**: Intuitive operator overloading for financial calculations
+- **JSON Serialization**: Built-in support for data interchange
+- **Comprehensive Testing**: 73 test cases covering all functionality
+- **Zero Dependencies**: Pure Python implementation
 
 ## Installation
 
-Cette bibliothèque est conçue pour être installée en tant que package Python.
+### From Source
 
-```
+```bash
 pip install .
 ```
 
-ou, si vous souhaitez l'installer en mode "editable" pour le développement :
+For development installation with testing capabilities:
 
+```bash
+pip install -e .[dev]
 ```
-pip install -e .
-```
 
-### Prérequis
+### Requirements
 
-* Python \>= 3.8
+- Python >= 3.8
 
-## Utilisation
+## Quick Start
 
-### Création d'objets avec la fabrique `BotPair`
+### Creating Objects with the `BotPair` Factory
 
-La classe `BotPair` agit comme une fabrique pour garantir la cohérence des types et des symboles de devises.
+The `BotPair` class acts as a factory to ensure consistency of types and currency symbols.
 
 ```python
 from venantvr.quotes import BotPair
 
-# Crée une fabrique pour la paire Bitcoin/US Dollar
+# Create a factory for the Bitcoin/US Dollar pair
 bot_pair = BotPair("BTC/USD")
 
-# Crée un Token pour la devise de base (BTC)
+# Create a Token for the base currency (BTC)
 btc_amount = bot_pair.create_token(1.5)
-print(f"Token créé: {btc_amount}")  # Affiche "1.50000000 BTC"
+print(f"Token created: {btc_amount}")  # Output: "1.50000000 BTC"
 
-# Crée un Price pour la paire
+# Create a Price for the pair
 btc_price = bot_pair.create_price(25000.0)
-print(f"Prix créé: {btc_price}")  # Affiche "25000.00 BTC/USD"
+print(f"Price created: {btc_price}")  # Output: "25000.00 BTC/USD"
 
-# Crée un objet USD pour la devise de cotation
+# Create a USD object for the quote currency
 usd_amount = bot_pair.create_usd(100.0)
-print(f"Montant USD créé: {usd_amount}")  # Affiche "100.00 USD"
+print(f"USD amount created: {usd_amount}")  # Output: "100.00 USD"
 ```
 
-### Opérations arithmétiques
+### Arithmetic Operations
 
-Les objets de la bibliothèque surchargent les opérateurs pour permettre des calculs intuitifs.
+Objects in the library overload operators to allow intuitive calculations.
 
-#### `Token`
+#### Token Operations
 
 ```python
 token1 = bot_pair.create_token(5.0)
@@ -60,22 +76,22 @@ token2 = bot_pair.create_token(3.0)
 
 # Addition
 result_add = token1 + token2
-print(f"Addition: {result_add}")  # Affiche "8.00000000 BTC"
+print(f"Addition: {result_add}")  # Output: "8.00000000 BTC"
 
-# Soustraction
+# Subtraction
 result_sub = token1 - token2
-print(f"Soustraction: {result_sub}")  # Affiche "2.00000000 BTC"
+print(f"Subtraction: {result_sub}")  # Output: "2.00000000 BTC"
 
-# Multiplication par un float
+# Multiplication by float
 result_mul_float = token1 * 2.5
-print(f"Multiplication par un float: {result_mul_float}")  # Affiche "12.50000000 BTC"
+print(f"Multiplication by float: {result_mul_float}")  # Output: "12.50000000 BTC"
 
-# Division par un float
+# Division by float
 result_div_float = token1 / 2.0
-print(f"Division par un float: {result_div_float}")  # Affiche "2.50000000 BTC"
+print(f"Division by float: {result_div_float}")  # Output: "2.50000000 BTC"
 ```
 
-#### `USD`
+#### USD Operations
 
 ```python
 usd1 = bot_pair.create_usd(50.0)
@@ -83,39 +99,135 @@ usd2 = bot_pair.create_usd(30.0)
 
 # Addition
 result_add = usd1 + usd2
-print(f"Addition: {result_add}")  # Affiche "80.00 USD"
+print(f"Addition: {result_add}")  # Output: "80.00 USD"
 
-# Multiplication par un float
+# Multiplication by float
 result_mul_float = usd1 * 2.5
-print(f"Multiplication par un float: {result_mul_float}")  # Affiche "125.00 USD"
+print(f"Multiplication by float: {result_mul_float}")  # Output: "125.00 USD"
 
-# Division par un Price pour obtenir un Token
+# Division by Price to get Token
 price = bot_pair.create_price(20000.0)
 result_div_price = usd1 / price
-print(f"Division par un Price: {result_div_price}")  # Affiche "0.00250000 BTC"
+print(f"Division by Price: {result_div_price}")  # Output: "0.00250000 BTC"
 ```
 
-#### `Price`
+#### Price Operations
 
 ```python
 price = bot_pair.create_price(20000.0)
 token = bot_pair.create_token(0.5)
 
-# Multiplication d'un Price par un Token
+# Multiply Price by Token to get USD
 result = price * token
-print(f"Prix * Token: {result}")  # Affiche "10000.00 USD"
+print(f"Price * Token: {result}")  # Output: "10000.00 USD"
 ```
 
-### Classes principales
+## Core Classes
 
-* **`Quote`**: Classe de base abstraite pour les devises, gérant la précision des montants.
-* **`BotPair`**: Fabrique de classes pour créer des instances de `Token`, `Price` et `USD` de manière sécurisée pour une paire de devises donnée.
-* **`Token`**: Représente un montant de la devise de base (par exemple, 1.5 BTC).
-* **`USD`**: Représente un montant de la devise de cotation (par exemple, 100 USD). Le nom est un peu générique, car il peut représenter n'importe quelle devise de
-  cotation (JPY, EUR, etc.).
-* **`Price`**: Représente le prix d'une devise de base par rapport à une devise de cotation (par exemple, 25000 BTC/USD).
+- **`Quote`**: Abstract base class for currencies, managing amount precision
+- **`BotPair`**: Factory class for creating `Token`, `Price`, and `USD` instances safely for a given currency pair
+- **`Token`**: Represents an amount of base currency (e.g., 1.5 BTC)
+- **`USD`**: Represents an amount of quote currency (e.g., 100 USD). Despite the name, it can represent any quote currency (JPY, EUR, etc.)
+- **`Price`**: Represents the price of a base currency relative to a quote currency (e.g., 25000 BTC/USD)
 
-## Tests
+## Testing
 
-La bibliothèque utilise `pytest` pour ses tests unitaires. Les tests couvrent la création d'objets, les opérations arithmétiques, les comparaisons et la gestion des
-erreurs (comme l'instanciation directe des classes ou la division par zéro).
+The library uses `pytest` for unit testing. Tests cover object creation, arithmetic operations, comparisons, and error handling.
+
+### Run Tests
+
+```bash
+# Run all tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run specific test file
+python -m pytest test/test_coin.py -v
+```
+
+### Test Coverage
+
+The library maintains comprehensive test coverage with 73 test cases covering:
+
+- Factory pattern object creation
+- Arithmetic operations and operator overloading
+- Type safety and error handling
+- JSON serialization and deserialization
+- Precision control and truncation
+- Edge cases and error conditions
+
+## Development
+
+### Setup Development Environment
+
+```bash
+make install-dev
+```
+
+### Code Quality Tools
+
+```bash
+# Run all quality checks
+make all
+
+# Individual checks
+make lint          # Run flake8 linter
+make format        # Format code with black
+make type-check    # Run mypy type checker
+```
+
+### Build and Distribution
+
+```bash
+# Build package
+make build
+
+# Upload to TestPyPI
+make upload-test
+
+# Upload to PyPI
+make upload
+```
+
+## API Reference
+
+### BotPair Factory Methods
+
+- `create_token(amount: float) -> Token`: Create a token for the base currency
+- `create_price(amount: float) -> Price`: Create a price for the currency pair
+- `create_usd(amount: float) -> USD`: Create a USD amount for the quote currency
+- `zero_token() -> Token`: Create a zero-value token
+- `zero_price() -> Price`: Create a zero-value price
+- `zero_usd() -> USD`: Create a zero-value USD amount
+
+### Arithmetic Operations Support
+
+| Operation            | Token              | USD                    | Price              |
+|----------------------|--------------------|------------------------|--------------------|
+| Addition (`+`)       | ✓                  | ✓                      | ✓                  |
+| Subtraction (`-`)    | ✓                  | ✓                      | ✓                  |
+| Multiplication (`*`) | ✓ (by float)       | ✓ (by float)           | ✓ (by float/Token) |
+| Division (`/`)       | ✓ (by float/Token) | ✓ (by float/USD/Price) | ✓ (by float/Price) |
+| Comparison           | ✓                  | ✓                      | ✓                  |
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run the test suite (`make all`)
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+**venantvr** - [venantvr@gmail.com](mailto:venantvr@gmail.com)
+
+Project Link: [https://github.com/venantvr/Python.Trading.Objects](https://github.com/venantvr/Python.Trading.Objects)
