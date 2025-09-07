@@ -140,7 +140,6 @@ The library uses `pytest` for unit testing. Tests validate object creation, arit
 # Run all tests
 make test
 
-
 # Run specific test file
 python -m pytest test/test_coin.py -v
 ```
@@ -161,32 +160,24 @@ The library includes complete testing with 73 test cases validating:
 ### Setup Development Environment
 
 ```bash
-make install-dev
+make install
 ```
 
 ### Code Quality Tools
 
 ```bash
-# Run all quality checks
-make all
+# Run format and tests together
+make check
 
-# Individual checks
-make lint          # Run flake8 linter
-make format        # Format code with black
-make type-check    # Run mypy type checker
-```
+# Individual commands
+make format        # Format code with black and isort
+make test          # Run pytest tests
 
-### Build and Distribution
+# Clean up generated files
+make clean
 
-```bash
-# Build package
-make build
-
-# Upload to TestPyPI
-make upload-test
-
-# Upload to PyPI
-make upload
+# Update dependencies
+make update
 ```
 
 ## API Reference
@@ -228,4 +219,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **venantvr** - [venantvr@gmail.com](mailto:venantvr@gmail.com)
 
-Project Link: [https://github.com/venantvr/Python_Trading_Objects](https://github.com/venantvr/Python_Trading_Objects)
+Project Link: [https://github.com/venantvr/Python.Trading.Objects](https://github.com/venantvr/Python.Trading.Objects)
