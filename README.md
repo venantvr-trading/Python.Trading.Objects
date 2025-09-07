@@ -18,7 +18,7 @@ cryptocurrency projects.
 - **Precision Control**: Configurable decimal precision for different asset types
 - **Arithmetic Operations**: Intuitive operator overloading for financial calculations
 - **JSON Serialization**: Built-in support for data interchange
-- **Comprehensive Testing**: 73 test cases covering all functionality
+- **Complete Test Suite**: 73 test cases for all functionality
 - **Zero Dependencies**: Pure Python implementation
 
 ## Installation
@@ -132,7 +132,7 @@ print(f"Price * Token: {result}")  # Output: "10000.00 USD"
 
 ## Testing
 
-The library uses `pytest` for unit testing. Tests cover object creation, arithmetic operations, comparisons, and error handling.
+The library uses `pytest` for unit testing. Tests validate object creation, arithmetic operations, comparisons, and error handling.
 
 ### Run Tests
 
@@ -145,9 +145,9 @@ make test
 python -m pytest test/test_coin.py -v
 ```
 
-### Test Coverage
+### Test Suite
 
-The library maintains comprehensive test coverage with 73 test cases covering:
+The library includes complete testing with 73 test cases validating:
 
 - Factory pattern object creation
 - Arithmetic operations and operator overloading

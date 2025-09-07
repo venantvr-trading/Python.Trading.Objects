@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced .gitignore for Python projects
 - Development dependencies in pyproject.toml
 - Code quality tools configuration (black, flake8, mypy)
-- Test coverage configuration
 
 ### Changed
 - Updated README.md to English with comprehensive documentation
