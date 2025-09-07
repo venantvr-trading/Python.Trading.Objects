@@ -1,4 +1,4 @@
-# Python.Trading.Objects
+# Python Trading Objects
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -6,7 +6,7 @@
 
 ## Description
 
-`Python.Trading.Objects` is a Python library for managing trading objects, including representations of amounts (tokens, USD), prices, and a factory pattern for creating
+`Python Trading Objects` is a Python library for managing trading objects, including representations of amounts (tokens, USD), prices, and a factory pattern for creating
 these objects based on currency pairs.
 
 The library provides type-safe, precision-controlled financial objects with arithmetic operations, making it ideal for trading applications, financial calculations, and
@@ -230,4 +230,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **venantvr** - [venantvr@gmail.com](mailto:venantvr@gmail.com)
 
-Project Link: [https://github.com/venantvr/Python.Trading.Objects](https://github.com/venantvr/Python.Trading.Objects)
+Project Link: [https://github.com/venantvr/Python_Trading_Objects](https://github.com/venantvr/Python_Trading_Objects)
