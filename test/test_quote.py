@@ -3,9 +3,10 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from venantvr.quotes import Token  # Pour tester les classes filles concrètes
 from venantvr.quotes import BotPair, Quote
+from venantvr.quotes import Token  # Pour tester les classes filles concrètes
 from venantvr.quotes.assertion import bot_assert
+
 
 # from typing import re # Removed as re.escape is no longer used directly
 
@@ -28,15 +29,15 @@ def test_bot_assert_invalid_type_raises_error():
     """Test that bot_assert raises a TypeError for an invalid type."""
     # Manually escape special characters for regex matching
     with pytest.raises(
-        TypeError, match="Le paramètre doit être de type <class 'float'>"
+            TypeError, match="Le paramètre doit être de type <class 'float'>"
     ):
         bot_assert(10, float)  # 10 is an int, not a float (strict check for float)
     with pytest.raises(TypeError, match="Le paramètre doit être de type <class 'str'>"):
         bot_assert(123, str)  # 123 is an int, not a string
     # Escape parentheses, angle brackets, and periods for the tuple representation
     with pytest.raises(
-        TypeError,
-        match=r"Le paramètre doit être de type \(<class 'int'>, <class 'float'>\)",
+            TypeError,
+            match=r"Le paramètre doit être de type \(<class 'int'>, <class 'float'>\)",
     ):
         bot_assert(
             "not a number", (int, float)
