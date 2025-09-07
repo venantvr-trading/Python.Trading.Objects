@@ -3,20 +3,18 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from venantvr.quotes import Token
-from venantvr.quotes import BotPair
-from venantvr.quotes import USD
+from venantvr.quotes import USD, BotPair, Token
 
 
-# Crée une instance de BotPair pour utiliser les factories
+# Create a BotPair instance to use the factories
 @pytest.fixture
 def bot_pair():
     return BotPair("BTC/USD")
 
 
-# Tests pour la classe USD
+# Tests for the USD class
 def test_usd_creation_via_factory(bot_pair):
-    """Test que USD ne peut être créé que via la factory."""
+    """Test that USD can only be created via the factory."""
     usd = bot_pair.create_usd(100.0)
     assert isinstance(usd, USD)
     assert usd.amount == 100.0
@@ -24,20 +22,22 @@ def test_usd_creation_via_factory(bot_pair):
 
 
 def test_usd_direct_instantiation_raises_error():
-    """Test qu'une instanciation directe de USD lève une TypeError."""
+    """Test that direct instantiation of USD raises a TypeError."""
     # Manually escape parentheses for regex matching
-    with pytest.raises(TypeError, match=r"Use BotPair\.create_usd\(\) to instantiate USD\."):
+    with pytest.raises(
+        TypeError, match=r"Use BotPair\.create_usd\(\) to instantiate USD\."
+    ):
         USD(100.0, "USD")
 
 
 def test_usd_str_representation(bot_pair):
-    """Test la représentation en chaîne de caractères de USD."""
+    """Test the string representation of USD."""
     usd = bot_pair.create_usd(123.45)
     assert str(usd) == "123.45 USD"
 
 
 def test_usd_equality(bot_pair):
-    """Test l'égalité entre deux instances de USD."""
+    """Test equality between two USD instances."""
     usd1 = bot_pair.create_usd(100.0)
     usd2 = bot_pair.create_usd(100.0)
     usd3 = bot_pair.create_usd(50.0)
@@ -46,7 +46,7 @@ def test_usd_equality(bot_pair):
 
 
 def test_usd_less_than_other_usd(bot_pair):
-    """Test la comparaison 'inférieur à' entre deux instances de USD."""
+    """Test 'less than' comparison between two USD instances."""
     usd1 = bot_pair.create_usd(50.0)
     usd2 = bot_pair.create_usd(100.0)
     assert usd1 < usd2
@@ -54,14 +54,14 @@ def test_usd_less_than_other_usd(bot_pair):
 
 
 def test_usd_less_than_float(bot_pair):
-    """Test la comparaison 'inférieur à' entre USD et un float."""
+    """Test 'less than' comparison between USD and a float."""
     usd = bot_pair.create_usd(75.0)
     assert usd < 100.0
     assert not (usd < 50.0)
 
 
 def test_usd_add_usds(bot_pair):
-    """Test l'addition de deux instances de USD."""
+    """Test addition of two USD instances."""
     usd1 = bot_pair.create_usd(50.0)
     usd2 = bot_pair.create_usd(30.0)
     result = usd1 + usd2
@@ -71,7 +71,7 @@ def test_usd_add_usds(bot_pair):
 
 
 def test_usd_radd_with_float(bot_pair):
-    """Test l'addition inversée avec un float."""
+    """Test reverse addition with a float."""
     usd = bot_pair.create_usd(50.0)
     result = 30.0 + usd
     assert isinstance(result, USD)
@@ -80,7 +80,7 @@ def test_usd_radd_with_float(bot_pair):
 
 
 def test_usd_sub_usds(bot_pair):
-    """Test la soustraction de deux instances de USD."""
+    """Test subtraction of two USD instances."""
     usd1 = bot_pair.create_usd(100.0)
     usd2 = bot_pair.create_usd(30.0)
     result = usd1 - usd2
@@ -90,7 +90,7 @@ def test_usd_sub_usds(bot_pair):
 
 
 def test_usd_negation(bot_pair):
-    """Test la négation d'une instance de USD."""
+    """Test negation of a USD instance."""
     usd = bot_pair.create_usd(50.0)
     result = -usd
     assert isinstance(result, USD)
@@ -99,7 +99,7 @@ def test_usd_negation(bot_pair):
 
 
 def test_usd_mul_by_float(bot_pair):
-    """Test la multiplication d'un USD par un float."""
+    """Test multiplication of a USD by a float."""
     usd = bot_pair.create_usd(50.0)
     result = usd * 2.5
     assert isinstance(result, USD)
@@ -108,7 +108,7 @@ def test_usd_mul_by_float(bot_pair):
 
 
 def test_usd_truediv_by_float(bot_pair):
-    """Test la division d'un USD par un float."""
+    """Test division of a USD by a float."""
     usd = bot_pair.create_usd(100.0)
     result = usd / 2.0
     assert isinstance(result, USD)
@@ -117,7 +117,7 @@ def test_usd_truediv_by_float(bot_pair):
 
 
 def test_usd_truediv_by_usd(bot_pair):
-    """Test la division d'un USD par un autre USD."""
+    """Test division of a USD by another USD."""
     usd1 = bot_pair.create_usd(100.0)
     usd2 = bot_pair.create_usd(20.0)
     result = usd1 / usd2
@@ -126,7 +126,7 @@ def test_usd_truediv_by_usd(bot_pair):
 
 
 def test_usd_truediv_by_price(bot_pair):
-    """Test la division d'un USD par un Price."""
+    """Test division of a USD by a Price."""
     usd = bot_pair.create_usd(10000.0)
     price = bot_pair.create_price(20000.0)  # 20000 USD/BTC
     result = usd / price
@@ -136,14 +136,14 @@ def test_usd_truediv_by_price(bot_pair):
 
 
 def test_usd_division_by_zero_float_raises_error(bot_pair):
-    """Test que la division d'un USD par zéro float lève une ZeroDivisionError."""
+    """Test that division of a USD by zero float raises a ZeroDivisionError."""
     usd = bot_pair.create_usd(100.0)
     with pytest.raises(ZeroDivisionError):
         _ = usd / 0.0
 
 
 def test_usd_division_by_zero_usd_raises_error(bot_pair):
-    """Test que la division d'un USD par un USD de valeur zéro lève une ZeroDivisionError."""
+    """Test that division of a USD by a zero-value USD raises a ZeroDivisionError."""
     usd1 = bot_pair.create_usd(100.0)
     usd2 = bot_pair.create_usd(0.0)
     with pytest.raises(ZeroDivisionError):
@@ -151,7 +151,7 @@ def test_usd_division_by_zero_usd_raises_error(bot_pair):
 
 
 def test_usd_division_by_zero_price_raises_error(bot_pair):
-    """Test que la division d'un USD par un Price de valeur zéro lève une ZeroDivisionError."""
+    """Test that division of a USD by a zero-value Price raises a ZeroDivisionError."""
     usd = bot_pair.create_usd(100.0)
     price_zero = bot_pair.create_price(0.0)
     with pytest.raises(ZeroDivisionError):
@@ -159,20 +159,20 @@ def test_usd_division_by_zero_price_raises_error(bot_pair):
 
 
 def test_usd_to_dict(bot_pair):
-    """Test la conversion de USD en dictionnaire."""
+    """Test conversion of USD to dictionary."""
     usd = bot_pair.create_usd(42.50)
     assert usd.to_dict() == {"price": 42.50}
 
 
 def test_usd_to_json(bot_pair):
-    """Test la conversion de USD en JSON."""
+    """Test conversion of USD to JSON."""
     usd = bot_pair.create_usd(42.50)
     assert json.loads(usd.to_json()) == {"price": 42.50}
 
 
 def test_usd_zero_constant(bot_pair):
-    """Test que la constante zero est correctement initialisée."""
+    """Test that the zero constant is correctly initialized."""
     assert bot_pair.zero_usd().amount == 0.0
     assert bot_pair.zero_usd().get_quote() == "USD"
-    # S'assurer qu'il s'agit bien d'une instance de USD
+    # Ensure it's indeed a USD instance
     assert isinstance(bot_pair.zero_usd(), USD)

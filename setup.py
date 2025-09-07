@@ -4,10 +4,10 @@ setup(
     name="Python.Trading.Objects",
     version="0.1.0",
     packages=find_packages(),
-    description="Une bibliothèque Python pour les objets de trading.",
+    description="A Python library for trading objects.",
     author="venantvr",
     author_email="venantvr@gmail.com",
     url="https://github.com/venantvr/Python.Trading.Objects",
-    install_requires=[],  # Ajoutez vos dépendances ici si nécessaire
+    install_requires=[],  # Add your dependencies here if necessary
     python_requires='>=3.8',
 )

@@ -140,8 +140,6 @@ The library uses `pytest` for unit testing. Tests cover object creation, arithme
 # Run all tests
 make test
 
-# Run tests with coverage
-make test-coverage
 
 # Run specific test file
 python -m pytest test/test_coin.py -v

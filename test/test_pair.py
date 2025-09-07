@@ -1,12 +1,9 @@
-from venantvr.quotes import Token
-from venantvr.quotes import BotPair
-from venantvr.quotes import Price
-from venantvr.quotes import USD
+from venantvr.quotes import USD, BotPair, Price, Token
 
 
-# Tests pour la classe BotPair
+# Tests for the BotPair class
 def test_bot_pair_initialization():
-    """Test l'initialisation de BotPair et l'extraction des symboles."""
+    """Test BotPair initialization and symbol extraction."""
     pair = BotPair("ETH/DAI")
     assert pair.pair == "ETH/DAI"
     assert pair.base_symbol == "ETH"
@@ -14,7 +11,7 @@ def test_bot_pair_initialization():
 
 
 def test_bot_pair_create_token():
-    """Test la création d'un Token via BotPair."""
+    """Test creation of a Token via BotPair."""
     pair = BotPair("XRP/EUR")
     token = pair.create_token(100.0)
     assert isinstance(token, Token)
@@ -23,7 +20,7 @@ def test_bot_pair_create_token():
 
 
 def test_bot_pair_create_price():
-    """Test la création d'un Price via BotPair."""
+    """Test creation of a Price via BotPair."""
     pair = BotPair("LTC/USDT")
     price = pair.create_price(80.50)
     assert isinstance(price, Price)
@@ -33,16 +30,18 @@ def test_bot_pair_create_price():
 
 
 def test_bot_pair_create_usd():
-    """Test la création d'un USD via BotPair."""
-    pair = BotPair("ADA/JPY")  # Même si c'est JPY, la classe USD est utilisée pour la devise de cotation
+    """Test creation of a USD via BotPair."""
+    pair = BotPair(
+        "ADA/JPY"
+    )  # Even though it's JPY, the USD class is used for the quote currency
     usd = pair.create_usd(500.75)
     assert isinstance(usd, USD)
     assert usd.amount == 500.75
-    assert usd.get_quote() == "JPY"  # Le symbole de cotation doit être celui de la paire
+    assert usd.get_quote() == "JPY"  # The quote symbol should be that of the pair
 
 
 def test_bot_pair_zero_token():
-    """Test la création d'un Token de zéro via BotPair."""
+    """Test creation of a zero Token via BotPair."""
     pair = BotPair("DOGE/USD")
     zero_token = pair.zero_token()
     assert isinstance(zero_token, Token)
@@ -51,7 +50,7 @@ def test_bot_pair_zero_token():
 
 
 def test_bot_pair_zero_usd():
-    """Test la création d'un USD de zéro via BotPair."""
+    """Test creation of a zero USD via BotPair."""
     pair = BotPair("SHIB/EUR")
     zero_usd = pair.zero_usd()
     assert isinstance(zero_usd, USD)
@@ -60,7 +59,7 @@ def test_bot_pair_zero_usd():
 
 
 def test_bot_pair_zero_price():
-    """Test la création d'un Price de zéro via BotPair."""
+    """Test creation of a zero Price via BotPair."""
     pair = BotPair("SOL/CAD")
     zero_price = pair.zero_price()
     assert isinstance(zero_price, Price)

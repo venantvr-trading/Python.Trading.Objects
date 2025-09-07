@@ -3,20 +3,18 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from venantvr.quotes import BotPair
-from venantvr.quotes import Price
-from venantvr.quotes import USD
+from venantvr.quotes import USD, BotPair, Price
 
 
-# Crée une instance de BotPair pour utiliser les factories
+# Create a BotPair instance to use the factories
 @pytest.fixture
 def bot_pair():
     return BotPair("BTC/USD")
 
 
-# Tests pour la classe Price
+# Tests for the Price class
 def test_price_creation_via_factory(bot_pair):
-    """Test que Price ne peut être créé que via la factory."""
+    """Test that Price can only be created via the factory."""
     price = bot_pair.create_price(25000.0)
     assert isinstance(price, Price)
     assert price.price == 25000.0
@@ -25,19 +23,21 @@ def test_price_creation_via_factory(bot_pair):
 
 
 def test_price_direct_instantiation_raises_error():
-    """Test qu'une instanciation directe de Price lève une TypeError."""
-    with pytest.raises(TypeError, match="Use BotPair\.create_price\(\) to instantiate Price\."):
+    """Test that direct instantiation of Price raises a TypeError."""
+    with pytest.raises(
+        TypeError, match="Use BotPair\.create_price\(\) to instantiate Price\."
+    ):
         Price(25000.0, "BTC", "USD")
 
 
 def test_price_str_representation(bot_pair):
-    """Test la représentation en chaîne de caractères de Price."""
+    """Test the string representation of Price."""
     price = bot_pair.create_price(25123.45)
     assert str(price) == "25123.45 BTC/USD"
 
 
 def test_price_add(bot_pair):
-    """Test l'addition de deux instances de Price."""
+    """Test addition of two Price instances."""
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(5000.0)
     result = price1 + price2
@@ -48,7 +48,7 @@ def test_price_add(bot_pair):
 
 
 def test_price_sub(bot_pair):
-    """Test la soustraction de deux instances de Price."""
+    """Test subtraction of two Price instances."""
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(5000.0)
     result = price1 - price2
@@ -59,7 +59,7 @@ def test_price_sub(bot_pair):
 
 
 def test_price_truediv_by_float(bot_pair):
-    """Test la division d'un Price par un float."""
+    """Test division of a Price by a float."""
     price = bot_pair.create_price(20000.0)
     result = price / 2.0
     assert isinstance(result, Price)
@@ -69,7 +69,7 @@ def test_price_truediv_by_float(bot_pair):
 
 
 def test_price_truediv_by_price(bot_pair):
-    """Test la division d'un Price par un autre Price."""
+    """Test division of a Price by another Price."""
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(5000.0)
     result = price1 / price2
@@ -78,14 +78,14 @@ def test_price_truediv_by_price(bot_pair):
 
 
 def test_price_division_by_zero_float_raises_error(bot_pair):
-    """Test que la division d'un Price par zéro float lève une ZeroDivisionError."""
+    """Test that division of a Price by zero float raises a ZeroDivisionError."""
     price = bot_pair.create_price(100.0)
     with pytest.raises(ZeroDivisionError):
         _ = price / 0.0
 
 
 def test_price_division_by_zero_price_raises_error(bot_pair):
-    """Test que la division d'un Price par un Price de valeur zéro lève une ZeroDivisionError."""
+    """Test that division of a Price by a zero-value Price raises a ZeroDivisionError."""
     price1 = bot_pair.create_price(100.0)
     price2 = bot_pair.create_price(0.0)
     with pytest.raises(ZeroDivisionError):
@@ -93,7 +93,7 @@ def test_price_division_by_zero_price_raises_error(bot_pair):
 
 
 def test_price_mul_by_float(bot_pair):
-    """Test la multiplication d'un Price par un float."""
+    """Test multiplication of a Price by a float."""
     price = bot_pair.create_price(20000.0)
     result = price * 1.5
     assert isinstance(result, Price)
@@ -103,7 +103,7 @@ def test_price_mul_by_float(bot_pair):
 
 
 def test_price_mul_by_token(bot_pair):
-    """Test la multiplication d'un Price par un Token (quantité)."""
+    """Test multiplication of a Price by a Token (quantity)."""
     price = bot_pair.create_price(20000.0)  # 20000 USD/BTC
     token = bot_pair.create_token(0.5)  # 0.5 BTC
     result = price * token
@@ -113,7 +113,7 @@ def test_price_mul_by_token(bot_pair):
 
 
 def test_price_equality(bot_pair):
-    """Test l'égalité entre deux instances de Price."""
+    """Test equality between two Price instances."""
     price1 = bot_pair.create_price(25000.0)
     price2 = bot_pair.create_price(25000.0)
     price3 = bot_pair.create_price(20000.0)
@@ -122,7 +122,7 @@ def test_price_equality(bot_pair):
 
 
 def test_price_less_than(bot_pair):
-    """Test la comparaison 'inférieur à' entre deux instances de Price."""
+    """Test 'less than' comparison between two Price instances."""
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(25000.0)
     assert price1 < price2
@@ -130,7 +130,7 @@ def test_price_less_than(bot_pair):
 
 
 def test_price_less_than_or_equal(bot_pair):
-    """Test la comparaison 'inférieur ou égal à' entre deux instances de Price."""
+    """Test 'less than or equal' comparison between two Price instances."""
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(20000.0)
     price3 = bot_pair.create_price(25000.0)
@@ -140,7 +140,7 @@ def test_price_less_than_or_equal(bot_pair):
 
 
 def test_price_greater_than(bot_pair):
-    """Test la comparaison 'supérieur à' entre deux instances de Price."""
+    """Test 'greater than' comparison between two Price instances."""
     price1 = bot_pair.create_price(25000.0)
     price2 = bot_pair.create_price(20000.0)
     assert price1 > price2
@@ -148,7 +148,7 @@ def test_price_greater_than(bot_pair):
 
 
 def test_price_greater_than_or_equal(bot_pair):
-    """Test la comparaison 'supérieur ou égal à' entre deux instances de Price."""
+    """Test 'greater than or equal' comparison between two Price instances."""
     price1 = bot_pair.create_price(25000.0)
     price2 = bot_pair.create_price(25000.0)
     price3 = bot_pair.create_price(20000.0)
@@ -158,21 +158,21 @@ def test_price_greater_than_or_equal(bot_pair):
 
 
 def test_price_to_dict(bot_pair):
-    """Test la conversion de Price en dictionnaire."""
+    """Test conversion of Price to dictionary."""
     price = bot_pair.create_price(25000.0)
     assert price.to_dict() == {"price": 25000.0}
 
 
 def test_price_to_json(bot_pair):
-    """Test la conversion de Price en JSON."""
+    """Test conversion of Price to JSON."""
     price = bot_pair.create_price(25000.0)
     assert json.loads(price.to_json()) == {"price": 25000.0}
 
 
 def test_price_zero_constant(bot_pair):
-    """Test que la constante zero est correctement initialisée."""
+    """Test that the zero constant is correctly initialized."""
     assert bot_pair.zero_price().price == 0.0
     assert bot_pair.zero_price().get_base() == "BTC"
     assert bot_pair.zero_price().get_quote() == "USD"
-    # S'assurer qu'il s'agit bien d'une instance de Price
+    # Ensure it's indeed a Price instance
     assert isinstance(bot_pair.zero_price(), Price)
