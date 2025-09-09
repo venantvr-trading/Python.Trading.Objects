@@ -122,21 +122,24 @@ class Token(Quote):
         other (float ou Price): L'opérande à multiplier.
 
         Retourne:
-        Token ou USD: Si 'other' est un float, retourne un Token.
-                      Si 'other' est un Price, retourne un montant en USD.
+        Token ou Asset: Si 'other' est un float, retourne un Token.
+                        Si 'other' est un Price, retourne un montant en Asset.
 
         Exception:
         TypeError: Si 'other' n'est ni un float ni une instance de Price.
         """
         from venantvr.quotes.price import Price
-        from venantvr.quotes.usd import USD
+        from venantvr.quotes.asset import Asset, USD
 
         bot_assert(other, (float, Price))
 
         if isinstance(other, float):
             return Token(self.amount * other, self._Token__base, _from_factory=True)
         if isinstance(other, Price):
-            return USD(self.amount * other.price, other.get_quote(), _from_factory=True)
+            # Return USD for backward compatibility when quote is USD
+            if other.get_quote() == "USD":
+                return USD(self.amount * other.price, other.get_quote(), _from_factory=True)
+            return Asset(self.amount * other.price, other.get_quote(), _from_factory=True)
         return NotImplemented
 
     def __truediv__(self, other):
