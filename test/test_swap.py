@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from venantvr.quotes.swap import (
+from python_trading_objects.quotes.swap import (
     SwapRequest, SwapQuote, SwapResult,
     SwapType, SwapDirection
 )

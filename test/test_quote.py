@@ -3,9 +3,9 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from venantvr.quotes import BotPair, Quote
-from venantvr.quotes import Token  # Pour tester les classes filles concrètes
-from venantvr.quotes.assertion import bot_assert
+from python_trading_objects.quotes import BotPair, Quote
+from python_trading_objects.quotes import Token  # Pour tester les classes filles concrètes
+from python_trading_objects.quotes.assertion import bot_assert
 
 
 # from typing import re # Removed as re.escape is no longer used directly
@@ -90,7 +90,7 @@ def test_quote_equality_different_types_raises_error(bot_pair):
     token = bot_pair.create_token(10.0)
     # Manually escape special characters for regex matching
     expected_error_message_regex = (
-        r"Le paramètre doit être de type <class 'venantvr\.quotes\.quote\.Quote'>"
+        r"Le paramètre doit être de type <class 'python_trading_objects\.quotes\.quote\.Quote'>"
     )
     with pytest.raises(TypeError, match=expected_error_message_regex):
         _ = token == 10.0  # Comparison with a float, not a Quote instance

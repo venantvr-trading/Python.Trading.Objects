@@ -3,9 +3,9 @@ Unit tests for the Asset class and its integration with BotPair.
 """
 import pytest
 
-from venantvr.quotes.asset import Asset
-from venantvr.quotes.coin import Token
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.coin import Token
+from python_trading_objects.quotes.pair import BotPair
 
 
 class TestAssetCreation:
@@ -231,8 +231,8 @@ class TestBackwardCompatibility:
 
     def test_usd_class_alias(self):
         """Test that USD class is properly aliased to Asset."""
-        from venantvr.quotes.asset import USD as AssetUSD
-        from venantvr.quotes.usd import USD as LegacyUSD
+        from python_trading_objects.quotes.asset import USD as AssetUSD
+        from python_trading_objects.quotes.usd import USD as LegacyUSD
 
         # Both should be the same class
         assert AssetUSD == LegacyUSD

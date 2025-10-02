@@ -46,7 +46,7 @@ pip install -e .[dev]
 The `BotPair` class acts as a factory to ensure consistency of types and currency symbols.
 
 ```python
-from venantvr.quotes import BotPair
+from python_trading_objects.quotes import BotPair
 
 # Create a factory for the Bitcoin/US Dollar pair
 bot_pair = BotPair("BTC/USD")
@@ -241,13 +241,13 @@ The original architecture was USD-centric:
 
 ### **The Solution: Generic Asset System**
 
-#### **1. New `Asset` Class** (`venantvr/quotes/asset.py`)
+#### **1. New `Asset` Class** (`python_trading_objects/quotes/asset.py`)
 
 A generic asset representation that works with ANY currency or token:
 
 ```python
-from venantvr.quotes.asset import Asset
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.pair import BotPair
 
 # Works with any pair now!
 pair_eur = BotPair("BTC/EUR")
@@ -285,12 +285,12 @@ usd = pair.create_usd(100)  # Actually creates 100 EUR!
 token = pair.create_token(1)  # Creates 1 ETH
 ```
 
-#### **3. Unified Swap Interface** (`venantvr/quotes/swap.py`)
+#### **3. Unified Swap Interface** (`python_trading_objects/quotes/swap.py`)
 
 Abstract away CEX/DEX differences with a unified swap concept:
 
 ```python
-from venantvr.quotes.swap import SwapRequest, SwapType
+from python_trading_objects.quotes.swap import SwapRequest, SwapType
 
 # Everything is a swap!
 # CEX "buy order" = swap quote→base
@@ -329,8 +329,8 @@ No changes needed! The legacy `USD` class is now an alias to `Asset`:
 
 ```python
 # Old code still works
-from venantvr.quotes.usd import USD
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.usd import USD
+from python_trading_objects.quotes.pair import BotPair
 
 pair = BotPair("BTC/USDT")
 usd = pair.create_usd(1000)  # Still works!
@@ -342,8 +342,8 @@ Use the new generic methods:
 
 ```python
 # New recommended approach
-from venantvr.quotes.asset import Asset
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.pair import BotPair
 
 pair = BotPair("BTC/EUR")
 quote_asset = pair.create_quote_asset(1000)  # 1000 EUR
@@ -377,8 +377,8 @@ base_asset = pair.create_base_asset(0.5)  # 0.5 BTC
 
 ```python
 # Test multi-currency support
-from venantvr.quotes.pair import BotPair
-from venantvr.quotes.swap import SwapRequest
+from python_trading_objects.quotes.pair import BotPair
+from python_trading_objects.quotes.swap import SwapRequest
 
 # EUR pair
 pair_eur = BotPair("BTC/EUR")

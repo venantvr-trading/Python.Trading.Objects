@@ -3,7 +3,7 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from venantvr.quotes import USD, BotPair, Token
+from python_trading_objects.quotes import USD, BotPair, Token
 
 
 # Create a BotPair instance to use the factories

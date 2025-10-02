@@ -1,7 +1,7 @@
 import json
 
-from venantvr.quotes.assertion import bot_assert
-from venantvr.quotes.quote import Quote
+from python_trading_objects.quotes.assertion import bot_assert
+from python_trading_objects.quotes.quote import Quote
 
 
 class Asset(Quote):
@@ -191,8 +191,8 @@ class Asset(Quote):
         TypeError: If 'other' is not a valid type.
         ZeroDivisionError: If division by zero is attempted.
         """
-        from venantvr.quotes.price import Price
-        from venantvr.quotes.coin import Token
+        from python_trading_objects.quotes.price import Price
+        from python_trading_objects.quotes.coin import Token
 
         if isinstance(other, (int, float)):
             if other == 0:

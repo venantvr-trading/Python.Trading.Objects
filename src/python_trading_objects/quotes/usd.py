@@ -2,7 +2,7 @@
 Legacy USD class for backward compatibility.
 New code should use Asset class instead.
 """
-from venantvr.quotes.asset import USD
+from python_trading_objects.quotes.asset import USD
 
 # Re-export USD from asset module for backward compatibility
 __all__ = ['USD']

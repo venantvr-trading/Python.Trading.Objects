@@ -1,9 +1,12 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = [
+    "setuptools>=61.0",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Python.Trading.Objects"
+name = "python_trading_objects"
 version = "0.1.0"
 description = "A Python library for managing trading objects with type safety and precision control."
 readme = "README.md"
@@ -15,7 +18,13 @@ authors = [
 maintainers = [
     { name = "venantvr", email = "venantvr@gmail.com" },
 ]
-keywords = ["trading", "finance", "cryptocurrency", "decimal", "precision"]
+keywords = [
+    "trading",
+    "finance",
+    "cryptocurrency",
+    "decimal",
+    "precision",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -57,35 +66,43 @@ Issues = "https://github.com/venantvr/Python.Trading.Objects/issues"
 Changelog = "https://github.com/venantvr/Python.Trading.Objects/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["venantvr*"]
-exclude = ["test*"]
+where = [
+    "src",
+]
+include = [
+    "python_trading_objects*",
+]
+exclude = [
+    "test*",
+]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --strict-markers --strict-config"
-testpaths = ["test"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
+testpaths = [
+    "test",
+]
+python_files = [
+    "test_*.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # Directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.pytest_cache
-  | \.venv
-  | build
-  | dist
-)/
-'''
+target-version = [
+    "py38",
+    "py39",
+    "py310",
+    "py311",
+    "py312",
+]
+include = "\\.pyi?$"
+extend-exclude = "/(\n  # Directories\n  \\.eggs\n  | \\.git\n  | \\.hg\n  | \\.mypy_cache\n  | \\.pytest_cache\n  | \\.venv\n  | build\n  | dist\n)/\n"
 
 [tool.mypy]
 python_version = "3.8"

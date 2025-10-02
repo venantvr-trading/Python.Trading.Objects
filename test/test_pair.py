@@ -1,4 +1,4 @@
-from venantvr.quotes import USD, BotPair, Price, Token
+from python_trading_objects.quotes import USD, BotPair, Price, Token
 
 
 # Tests for the BotPair class

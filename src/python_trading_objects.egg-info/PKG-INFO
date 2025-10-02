@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: Python.Trading.Objects
+Name: python_trading_objects
 Version: 0.1.0
 Summary: A Python library for managing trading objects with type safety and precision control.
 Author-email: venantvr <venantvr@gmail.com>
@@ -29,10 +29,14 @@ License-File: LICENSE
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: isort>=5.0.0; extra == "dev"
 Requires-Dist: flake8>=5.0.0; extra == "dev"
 Requires-Dist: mypy>=1.0.0; extra == "dev"
 Requires-Dist: build>=0.8.0; extra == "dev"
 Requires-Dist: twine>=4.0.0; extra == "dev"
+Requires-Dist: setuptools>=61.0; extra == "dev"
+Requires-Dist: wheel; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
 Provides-Extra: test
 Requires-Dist: pytest>=7.0.0; extra == "test"
 Dynamic: license-file
@@ -85,7 +89,7 @@ pip install -e .[dev]
 The `BotPair` class acts as a factory to ensure consistency of types and currency symbols.
 
 ```python
-from venantvr.quotes import BotPair
+from python_trading_objects.quotes import BotPair
 
 # Create a factory for the Bitcoin/US Dollar pair
 bot_pair = BotPair("BTC/USD")
@@ -280,13 +284,13 @@ The original architecture was USD-centric:
 
 ### **The Solution: Generic Asset System**
 
-#### **1. New `Asset` Class** (`venantvr/quotes/asset.py`)
+#### **1. New `Asset` Class** (`python_trading_objects/quotes/asset.py`)
 
 A generic asset representation that works with ANY currency or token:
 
 ```python
-from venantvr.quotes.asset import Asset
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.pair import BotPair
 
 # Works with any pair now!
 pair_eur = BotPair("BTC/EUR")
@@ -324,38 +328,38 @@ usd = pair.create_usd(100)  # Actually creates 100 EUR!
 token = pair.create_token(1)  # Creates 1 ETH
 ```
 
-#### **3. Unified Swap Interface** (`venantvr/quotes/swap.py`)
+#### **3. Unified Swap Interface** (`python_trading_objects/quotes/swap.py`)
 
 Abstract away CEX/DEX differences with a unified swap concept:
 
 ```python
-from venantvr.quotes.swap import SwapRequest, SwapType
+from python_trading_objects.quotes.swap import SwapRequest, SwapType
 
 # Everything is a swap!
 # CEX "buy order" = swap quote→base
 swap1 = SwapRequest(
-   from_symbol="USDC",
-   to_symbol="BTC",
-   amount=1000.0,
-   swap_type=SwapType.MARKET
+    from_symbol="USDC",
+    to_symbol="BTC",
+    amount=1000.0,
+    swap_type=SwapType.MARKET
 )
 print(swap1.is_buy())  # True - buying BTC with USDC
 
 # CEX "sell order" = swap base→quote  
 swap2 = SwapRequest(
-   from_symbol="BTC",
-   to_symbol="USDC",
-   amount=0.5,
-   swap_type=SwapType.LIMIT
+    from_symbol="BTC",
+    to_symbol="USDC",
+    amount=0.5,
+    swap_type=SwapType.LIMIT
 )
 print(swap2.is_sell())  # True - selling BTC for USDC
 
 # DEX direct swap = swap any→any
 swap3 = SwapRequest(
-   from_symbol="ETH",
-   to_symbol="BTC",
-   amount=10.0,
-   swap_type=SwapType.MARKET
+    from_symbol="ETH",
+    to_symbol="BTC",
+    amount=10.0,
+    swap_type=SwapType.MARKET
 )
 print(swap3.is_swap())  # True - generic crypto-to-crypto swap
 ```
@@ -368,8 +372,8 @@ No changes needed! The legacy `USD` class is now an alias to `Asset`:
 
 ```python
 # Old code still works
-from venantvr.quotes.usd import USD
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.usd import USD
+from python_trading_objects.quotes.pair import BotPair
 
 pair = BotPair("BTC/USDT")
 usd = pair.create_usd(1000)  # Still works!
@@ -381,8 +385,8 @@ Use the new generic methods:
 
 ```python
 # New recommended approach
-from venantvr.quotes.asset import Asset
-from venantvr.quotes.pair import BotPair
+from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.pair import BotPair
 
 pair = BotPair("BTC/EUR")
 quote_asset = pair.create_quote_asset(1000)  # 1000 EUR
@@ -392,32 +396,32 @@ base_asset = pair.create_base_asset(0.5)  # 0.5 BTC
 ### **Benefits of the New Architecture**
 
 1. **🌍 Universal Currency Support**
-   - Trade any pair: BTC/EUR, ETH/USDC, DOGE/BTC, etc.
-   - No hardcoded USD dependency
+    - Trade any pair: BTC/EUR, ETH/USDC, DOGE/BTC, etc.
+    - No hardcoded USD dependency
 
 2. **🔄 CEX/DEX Unified**
-   - Same interface for centralized and decentralized exchanges
-   - Swap abstraction works for both order books and AMMs
+    - Same interface for centralized and decentralized exchanges
+    - Swap abstraction works for both order books and AMMs
 
 3. **⚡ Zero Breaking Changes**
-   - 100% backward compatible
-   - Existing code continues to work
-   - Gradual migration possible
+    - 100% backward compatible
+    - Existing code continues to work
+    - Gradual migration possible
 
 4. **🔒 Type Safety Enhanced**
-   - Can't accidentally mix different assets
-   - Operations validated at runtime
+    - Can't accidentally mix different assets
+    - Operations validated at runtime
 
 5. **🚀 Future Ready**
-   - Easy to add bridges, aggregators, cross-chain swaps
-   - Prepared for DeFi integrations
+    - Easy to add bridges, aggregators, cross-chain swaps
+    - Prepared for DeFi integrations
 
 ### **Testing the New Features**
 
 ```python
 # Test multi-currency support
-from venantvr.quotes.pair import BotPair
-from venantvr.quotes.swap import SwapRequest
+from python_trading_objects.quotes.pair import BotPair
+from python_trading_objects.quotes.swap import SwapRequest
 
 # EUR pair
 pair_eur = BotPair("BTC/EUR")
