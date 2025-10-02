@@ -295,28 +295,28 @@ from venantvr.quotes.swap import SwapRequest, SwapType
 # Everything is a swap!
 # CEX "buy order" = swap quote→base
 swap1 = SwapRequest(
-   from_symbol="USDC",
-   to_symbol="BTC",
-   amount=1000.0,
-   swap_type=SwapType.MARKET
+    from_symbol="USDC",
+    to_symbol="BTC",
+    amount=1000.0,
+    swap_type=SwapType.MARKET
 )
 print(swap1.is_buy())  # True - buying BTC with USDC
 
 # CEX "sell order" = swap base→quote  
 swap2 = SwapRequest(
-   from_symbol="BTC",
-   to_symbol="USDC",
-   amount=0.5,
-   swap_type=SwapType.LIMIT
+    from_symbol="BTC",
+    to_symbol="USDC",
+    amount=0.5,
+    swap_type=SwapType.LIMIT
 )
 print(swap2.is_sell())  # True - selling BTC for USDC
 
 # DEX direct swap = swap any→any
 swap3 = SwapRequest(
-   from_symbol="ETH",
-   to_symbol="BTC",
-   amount=10.0,
-   swap_type=SwapType.MARKET
+    from_symbol="ETH",
+    to_symbol="BTC",
+    amount=10.0,
+    swap_type=SwapType.MARKET
 )
 print(swap3.is_swap())  # True - generic crypto-to-crypto swap
 ```
@@ -353,25 +353,25 @@ base_asset = pair.create_base_asset(0.5)  # 0.5 BTC
 ### **Benefits of the New Architecture**
 
 1. **🌍 Universal Currency Support**
-   - Trade any pair: BTC/EUR, ETH/USDC, DOGE/BTC, etc.
-   - No hardcoded USD dependency
+    - Trade any pair: BTC/EUR, ETH/USDC, DOGE/BTC, etc.
+    - No hardcoded USD dependency
 
 2. **🔄 CEX/DEX Unified**
-   - Same interface for centralized and decentralized exchanges
-   - Swap abstraction works for both order books and AMMs
+    - Same interface for centralized and decentralized exchanges
+    - Swap abstraction works for both order books and AMMs
 
 3. **⚡ Zero Breaking Changes**
-   - 100% backward compatible
-   - Existing code continues to work
-   - Gradual migration possible
+    - 100% backward compatible
+    - Existing code continues to work
+    - Gradual migration possible
 
 4. **🔒 Type Safety Enhanced**
-   - Can't accidentally mix different assets
-   - Operations validated at runtime
+    - Can't accidentally mix different assets
+    - Operations validated at runtime
 
 5. **🚀 Future Ready**
-   - Easy to add bridges, aggregators, cross-chain swaps
-   - Prepared for DeFi integrations
+    - Easy to add bridges, aggregators, cross-chain swaps
+    - Prepared for DeFi integrations
 
 ### **Testing the New Features**
 

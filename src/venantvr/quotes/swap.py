@@ -1,34 +1,34 @@
 """
 Unified swap/trade abstractions for CEX and DEX operations.
 """
-from typing import Union, Optional, Dict, Any
 from enum import Enum
+from typing import Optional, Dict, Any
 
 
 class SwapType(Enum):
     """Types of swaps available across exchanges."""
-    MARKET = "market"      # CEX market order / DEX instant swap
-    LIMIT = "limit"        # CEX limit order / DEX limit order (1inch, etc)
-    TWAP = "twap"         # Time-weighted average price (both)
-    STOP = "stop"         # Stop order (mainly CEX)
-    
-    
+    MARKET = "market"  # CEX market order / DEX instant swap
+    LIMIT = "limit"  # CEX limit order / DEX limit order (1inch, etc)
+    TWAP = "twap"  # Time-weighted average price (both)
+    STOP = "stop"  # Stop order (mainly CEX)
+
+
 class SwapDirection(Enum):
     """Direction of the swap operation."""
-    BUY = "buy"           # Swap quote → base (USDC → BTC)
-    SELL = "sell"         # Swap base → quote (BTC → USDC)
-    SWAP = "swap"         # Generic swap (any → any)
+    BUY = "buy"  # Swap quote → base (USDC → BTC)
+    SELL = "sell"  # Swap base → quote (BTC → USDC)
+    SWAP = "swap"  # Generic swap (any → any)
 
 
 class SwapRequest:
     """Represents a swap request between two assets."""
-    
+
     def __init__(
-        self, 
-        from_symbol: str,
-        to_symbol: str, 
-        amount: float,
-        swap_type: SwapType = SwapType.MARKET
+            self,
+            from_symbol: str,
+            to_symbol: str,
+            amount: float,
+            swap_type: SwapType = SwapType.MARKET
     ):
         """
         Creates a swap request.
@@ -43,42 +43,42 @@ class SwapRequest:
         self.to_symbol = to_symbol
         self.amount = amount
         self.swap_type = swap_type
-        
+
         # Determine trading pair
         self.pair = f"{self.from_symbol}/{self.to_symbol}"
         self.reverse_pair = f"{self.to_symbol}/{self.from_symbol}"
-        
+
         # Identify swap direction
         self.direction = self._determine_direction()
-    
+
     def _determine_direction(self) -> SwapDirection:
         """Determines if this is a buy, sell, or generic swap."""
         stablecoins = ["USD", "USDC", "USDT", "DAI", "BUSD", "EUR", "GBP"]
         fiats = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"]
         quotes = stablecoins + fiats
-        
+
         from_is_quote = self.from_symbol in quotes
         to_is_quote = self.to_symbol in quotes
-        
+
         if from_is_quote and not to_is_quote:
             return SwapDirection.BUY  # Buying base with quote
         elif not from_is_quote and to_is_quote:
             return SwapDirection.SELL  # Selling base for quote
         else:
             return SwapDirection.SWAP  # Generic swap (crypto-to-crypto)
-    
+
     def is_buy(self) -> bool:
         """Checks if this is a buy operation (quote → base)."""
         return self.direction == SwapDirection.BUY
-    
+
     def is_sell(self) -> bool:
         """Checks if this is a sell operation (base → quote)."""
         return self.direction == SwapDirection.SELL
-    
+
     def is_swap(self) -> bool:
         """Checks if this is a generic swap (any → any)."""
         return self.direction == SwapDirection.SWAP
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts the swap request to a dictionary."""
         return {
@@ -93,15 +93,15 @@ class SwapRequest:
 
 class SwapQuote:
     """Represents a price quote for a swap."""
-    
+
     def __init__(
-        self,
-        rate: float,
-        from_symbol: str,
-        to_symbol: str,
-        fees: float = 0.0,
-        slippage: float = 0.0,
-        gas_estimate: Optional[float] = None
+            self,
+            rate: float,
+            from_symbol: str,
+            to_symbol: str,
+            fees: float = 0.0,
+            slippage: float = 0.0,
+            gas_estimate: Optional[float] = None
     ):
         """
         Creates a swap quote.
@@ -120,14 +120,14 @@ class SwapQuote:
         self.fees = fees
         self.slippage = slippage
         self.gas_estimate = gas_estimate
-        
+
     def estimate_output(self, input_amount: float) -> float:
         """Estimates output amount for given input."""
         gross_output = input_amount * self.rate
         # Apply fees and slippage
         net_output = gross_output * (1 - self.fees) * (1 - self.slippage)
         return net_output
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts the quote to a dictionary."""
         return {
@@ -142,17 +142,17 @@ class SwapQuote:
 
 class SwapResult:
     """Represents the result of an executed swap."""
-    
+
     def __init__(
-        self,
-        request: SwapRequest,
-        executed_rate: float,
-        from_amount: float,
-        to_amount: float,
-        fees_paid: float,
-        transaction_id: str,
-        timestamp: float,
-        gas_used: Optional[float] = None
+            self,
+            request: SwapRequest,
+            executed_rate: float,
+            from_amount: float,
+            to_amount: float,
+            fees_paid: float,
+            transaction_id: str,
+            timestamp: float,
+            gas_used: Optional[float] = None
     ):
         """
         Creates a swap result.
@@ -175,7 +175,7 @@ class SwapResult:
         self.transaction_id = transaction_id
         self.timestamp = timestamp
         self.gas_used = gas_used
-        
+
         # Calculate slippage from expected
         # The executed_rate is what we got, expected_rate is what we should have gotten
         self.expected_rate = to_amount / from_amount if from_amount > 0 else 0
@@ -188,7 +188,7 @@ class SwapResult:
             self.slippage = abs((self.expected_rate - executed_rate) / executed_rate)
         else:
             self.slippage = 0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts the result to a dictionary."""
         return {
