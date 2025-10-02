@@ -1,2 +1,0 @@
-# Production dependencies only
-# (Empty for now as the library has no runtime dependencies)
