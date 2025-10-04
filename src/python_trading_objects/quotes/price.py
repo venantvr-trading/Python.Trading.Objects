@@ -1,14 +1,28 @@
 import json
+from typing import Any, Dict
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
 from python_trading_objects.quotes.assertion import bot_assert
 
 
-class Price:
+class Price(BaseModel):
     """
     Représente le prix d'une devise de base par rapport à une devise de cotation.
 
     Fournit des méthodes pour manipuler le prix et effectuer des opérations arithmétiques.
     """
+
+    # Configuration Pydantic
+    model_config = ConfigDict(
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+        extra="forbid",
+    )
+
+    price: float = Field(..., description="Le montant du prix")
+    base_symbol: str = Field(..., description="Le symbole de la devise de base")
+    quote_symbol: str = Field(..., description="Le symbole de la devise de cotation")
 
     def __init__(
         self,
@@ -34,21 +48,37 @@ class Price:
 
         bot_assert(price, (float, int))
 
-        self.price = float(price)
-        self.__base = base_symbol
-        self.__quote = quote_symbol
+        super().__init__(
+            price=float(price), base_symbol=base_symbol, quote_symbol=quote_symbol
+        )
+
+    @field_validator("price", mode="before")
+    @classmethod
+    def validate_price(cls, v):
+        """Valide que le prix est un nombre."""
+        if not isinstance(v, (float, int)):
+            raise TypeError(f"Price must be float or int, got {type(v)}")
+        return float(v)
+
+    @field_validator("base_symbol", "quote_symbol")
+    @classmethod
+    def validate_symbols(cls, v):
+        """Valide que les symboles sont des chaînes non vides."""
+        if not isinstance(v, str) or not v:
+            raise ValueError("Symbol must be a non-empty string")
+        return v.upper()
 
     def get_base(self) -> str:
         """Retourne le symbole de la devise de base du prix."""
-        return self.__base
+        return self.base_symbol
 
     def get_quote(self) -> str:
         """Retourne le symbole de la devise de cotation du prix."""
-        return self.__quote
+        return self.quote_symbol
 
     def __str__(self):
         """Retourne une représentation formatée du prix."""
-        return f"{self.price:.2f} {self.__base}/{self.__quote}"
+        return f"{self.price:.2f} {self.base_symbol}/{self.quote_symbol}"
 
     def __add__(self, other):
         """
@@ -65,7 +95,10 @@ class Price:
         """
         bot_assert(other, Price)
         return Price(
-            self.price + other.price, self.__base, self.__quote, _from_factory=True
+            self.price + other.price,
+            self.base_symbol,
+            self.quote_symbol,
+            _from_factory=True,
         )
 
     def __sub__(self, other):
@@ -83,7 +116,10 @@ class Price:
         """
         bot_assert(other, Price)
         return Price(
-            self.price - other.price, self.__base, self.__quote, _from_factory=True
+            self.price - other.price,
+            self.base_symbol,
+            self.quote_symbol,
+            _from_factory=True,
         )
 
     def __truediv__(self, other):
@@ -105,7 +141,10 @@ class Price:
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return Price(
-                self.price / other, self.__base, self.__quote, _from_factory=True
+                self.price / other,
+                self.base_symbol,
+                self.quote_symbol,
+                _from_factory=True,
             )
         if isinstance(other, Price):
             if other.price == 0:
@@ -121,24 +160,30 @@ class Price:
         other (float, int, Token): Le multiplicateur.
 
         Retourne:
-        Price ou USD: Si 'other' est un nombre, retourne un nouveau Price.
-                      Si 'other' est un Token, retourne un montant en USD.
+        Price ou Asset: Si 'other' est un nombre, retourne un nouveau Price.
+                        Si 'other' est un Token, retourne un montant en Asset.
 
         Exception:
         TypeError: Si 'other' n'est pas un float, int ou Token.
         """
+        from python_trading_objects.quotes.asset import USD, Asset
         from python_trading_objects.quotes.coin import Token
-        from python_trading_objects.quotes.usd import USD
 
         bot_assert(other, (int, float, Token))
 
         if isinstance(other, (int, float)):
             return Price(
-                self.price * other, self.__base, self.__quote, _from_factory=True
+                self.price * other,
+                self.base_symbol,
+                self.quote_symbol,
+                _from_factory=True,
             )
         if isinstance(other, Token):
             amount = self.price * other.amount
-            return USD(amount, self.__quote, _from_factory=True)
+            # Return USD for backward compatibility when quote is USD
+            if self.quote_symbol == "USD":
+                return USD(amount, self.quote_symbol, _from_factory=True)
+            return Asset(amount, self.quote_symbol, _from_factory=True)
         return NotImplemented
 
     def __eq__(self, other):
@@ -192,9 +237,22 @@ class Price:
         """Vérifie si une instance de Price est supérieure ou égale à une autre."""
         return self.__gt__(other) or self.__eq__(other)
 
+    def __hash__(self):
+        """Rend la classe hashable pour utilisation dans des sets/dicts."""
+        return hash((self.price, self.base_symbol, self.quote_symbol))
+
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
+        return {
+            "price": str(self.price),
+            "base_symbol": self.base_symbol,
+            "quote_symbol": self.quote_symbol,
+        }
+
     def to_dict(self):
-        """Convertit l'objet en dictionnaire."""
-        return dict(price=self.price)
+        """Convertit l'objet en dictionnaire avec les float en string pour préserver la précision."""
+        return {"price": str(self.price)}
 
     def to_json(self):
         """Convertit l'objet en JSON."""

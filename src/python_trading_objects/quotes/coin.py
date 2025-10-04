@@ -1,4 +1,7 @@
 import json
+from typing import Any, Dict
+
+from pydantic import Field, model_serializer
 
 from python_trading_objects.quotes.assertion import bot_assert
 from python_trading_objects.quotes.quote import Quote
@@ -11,6 +14,8 @@ class Token(Quote):
     Fournit des méthodes pour manipuler et comparer des montants,
     assurant la cohérence dans les opérations.
     """
+
+    base_symbol: str = Field(..., description="Le symbole de la devise de base")
 
     def __init__(self, amount: float, base_symbol: str, _from_factory: bool = False):
         """
@@ -27,18 +32,31 @@ class Token(Quote):
         if not _from_factory:
             raise TypeError("Use BotPair.create_token() to instantiate Token.")
 
-        super().__init__(amount, _from_factory=_from_factory)
         bot_assert(amount, float)
 
-        self._Token__base = base_symbol
+        # Appelle le constructeur parent avec base_symbol
+        super().__init__(amount, _from_factory=_from_factory, base_symbol=base_symbol)
 
     def get_base(self) -> str:
         """Retourne le symbole de la devise de base du token."""
-        return self._Token__base
+        return self.base_symbol
+
+    def get_child_class(self):
+        """Retourne le type de la classe fille de l'instance courante."""
+        return self.__class__
+
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
+        return {
+            "amount": str(self.amount),
+            "precision": self.precision,
+            "base_symbol": self.base_symbol,
+        }
 
     def __str__(self):
         """Retourne une représentation formatée du montant du token."""
-        return f"{self.amount:.8f} {self._Token__base}"  # Formatage à 8 décimales
+        return f"{self.amount:.8f} {self.base_symbol}"  # Formatage à 8 décimales
 
     def __lt__(self, other):
         """
@@ -58,7 +76,7 @@ class Token(Quote):
         elif isinstance(other, float):
             return self.amount < other
         raise TypeError(
-            f"L'opérande doit être une instance de {self._Token__base} ou un nombre (float)"
+            f"L'opérande doit être une instance de {self.base_symbol} ou un nombre (float)"
         )
 
     def __add__(self, other):
@@ -75,7 +93,7 @@ class Token(Quote):
         TypeError: Si 'other' n'est pas une instance de Token.
         """
         bot_assert(other, Token)
-        return Token(self.amount + other.amount, self._Token__base, _from_factory=True)
+        return Token(self.amount + other.amount, self.base_symbol, _from_factory=True)
 
     def __radd__(self, other):
         """
@@ -88,7 +106,7 @@ class Token(Quote):
         Token: Une nouvelle instance représentant la somme.
         """
         if isinstance(other, (int, float)):
-            return Token(self.amount + other, self._Token__base, _from_factory=True)
+            return Token(self.amount + other, self.base_symbol, _from_factory=True)
         return NotImplemented
 
     def __sub__(self, other):
@@ -105,7 +123,7 @@ class Token(Quote):
         TypeError: Si 'other' n'est pas une instance de Token.
         """
         bot_assert(other, Token)
-        return Token(self.amount - other.amount, self._Token__base, _from_factory=True)
+        return Token(self.amount - other.amount, self.base_symbol, _from_factory=True)
 
     def __neg__(self):
         """
@@ -114,7 +132,7 @@ class Token(Quote):
         Retourne:
         Token: Une nouvelle instance représentant le montant négatif.
         """
-        return Token(-self.amount, self._Token__base, _from_factory=True)
+        return Token(-self.amount, self.base_symbol, _from_factory=True)
 
     def __mul__(self, other):
         """
@@ -136,7 +154,7 @@ class Token(Quote):
         bot_assert(other, (float, Price))
 
         if isinstance(other, float):
-            return Token(self.amount * other, self._Token__base, _from_factory=True)
+            return Token(self.amount * other, self.base_symbol, _from_factory=True)
         if isinstance(other, Price):
             # Return USD for backward compatibility when quote is USD
             if other.get_quote() == "USD":
@@ -166,16 +184,16 @@ class Token(Quote):
         if isinstance(other, float):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Token(self.amount / other, self._Token__base, _from_factory=True)
+            return Token(self.amount / other, self.base_symbol, _from_factory=True)
         if isinstance(other, Token):
             if other.amount == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return self.amount / other.amount
-        raise TypeError(f"L'opérande doit être un int, float ou {self._Token__base}")
+        raise TypeError(f"L'opérande doit être un int, float ou {self.base_symbol}")
 
     def to_dict(self):
-        """Convertit l'objet en dictionnaire."""
-        return dict(price=self.amount)
+        """Convertit l'objet en dictionnaire avec les float en string pour préserver la précision."""
+        return {"price": str(self.amount)}
 
     def to_json(self):
         """Convertit l'objet en JSON."""

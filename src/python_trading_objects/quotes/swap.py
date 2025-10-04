@@ -5,6 +5,8 @@ Unified swap/trade abstractions for CEX and DEX operations.
 from enum import Enum
 from typing import Any, Dict, Optional
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
+
 
 class SwapType(Enum):
     """Types of swaps available across exchanges."""
@@ -23,8 +25,27 @@ class SwapDirection(Enum):
     SWAP = "swap"  # Generic swap (any → any)
 
 
-class SwapRequest:
+class SwapRequest(BaseModel):
     """Represents a swap request between two assets."""
+
+    # Configuration Pydantic
+    model_config = ConfigDict(
+        validate_assignment=True,
+        use_enum_values=False,  # Keep enum instances
+        extra="forbid",
+    )
+
+    from_symbol: str = Field(..., description="Symbol of the asset to swap from")
+    to_symbol: str = Field(..., description="Symbol of the asset to swap to")
+    amount: float = Field(..., description="Amount to swap", ge=0)
+    swap_type: SwapType = Field(
+        default=SwapType.MARKET, description="Type of swap (market, limit, etc.)"
+    )
+    pair: str = Field(default="", description="Trading pair")
+    reverse_pair: str = Field(default="", description="Reverse trading pair")
+    direction: SwapDirection = Field(
+        default=SwapDirection.SWAP, description="Direction of swap"
+    )
 
     def __init__(
         self,
@@ -32,6 +53,7 @@ class SwapRequest:
         to_symbol: str,
         amount: float,
         swap_type: SwapType = SwapType.MARKET,
+        **data
     ):
         """
         Creates a swap request.
@@ -42,26 +64,35 @@ class SwapRequest:
         amount: Amount to swap
         swap_type: Type of swap (market, limit, etc.)
         """
-        self.from_symbol = from_symbol
-        self.to_symbol = to_symbol
-        self.amount = amount
-        self.swap_type = swap_type
-
         # Determine trading pair
-        self.pair = f"{self.from_symbol}/{self.to_symbol}"
-        self.reverse_pair = f"{self.to_symbol}/{self.from_symbol}"
+        pair = f"{from_symbol}/{to_symbol}"
+        reverse_pair = f"{to_symbol}/{from_symbol}"
 
         # Identify swap direction
-        self.direction = self._determine_direction()
+        direction = SwapRequest._determine_direction_static(from_symbol, to_symbol)
 
-    def _determine_direction(self) -> SwapDirection:
+        super().__init__(
+            from_symbol=from_symbol,
+            to_symbol=to_symbol,
+            amount=amount,
+            swap_type=swap_type,
+            pair=pair,
+            reverse_pair=reverse_pair,
+            direction=direction,
+            **data
+        )
+
+    @staticmethod
+    def _determine_direction_static(
+        from_symbol: str, to_symbol: str
+    ) -> SwapDirection:
         """Determines if this is a buy, sell, or generic swap."""
         stablecoins = ["USD", "USDC", "USDT", "DAI", "BUSD", "EUR", "GBP"]
         fiats = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"]
         quotes = stablecoins + fiats
 
-        from_is_quote = self.from_symbol in quotes
-        to_is_quote = self.to_symbol in quotes
+        from_is_quote = from_symbol in quotes
+        to_is_quote = to_symbol in quotes
 
         if from_is_quote and not to_is_quote:
             return SwapDirection.BUY  # Buying base with quote
@@ -69,6 +100,14 @@ class SwapRequest:
             return SwapDirection.SELL  # Selling base for quote
         else:
             return SwapDirection.SWAP  # Generic swap (crypto-to-crypto)
+
+    @field_validator("from_symbol", "to_symbol")
+    @classmethod
+    def validate_symbols(cls, v):
+        """Valide que les symboles sont des chaînes non vides."""
+        if not isinstance(v, str) or not v:
+            raise ValueError("Symbol must be a non-empty string")
+        return v.upper()
 
     def is_buy(self) -> bool:
         """Checks if this is a buy operation (quote → base)."""
@@ -82,20 +121,50 @@ class SwapRequest:
         """Checks if this is a generic swap (any → any)."""
         return self.direction == SwapDirection.SWAP
 
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
+        return {
+            "from_symbol": self.from_symbol,
+            "to_symbol": self.to_symbol,
+            "amount": str(self.amount),
+            "swap_type": self.swap_type.value,
+            "pair": self.pair,
+            "reverse_pair": self.reverse_pair,
+            "direction": self.direction.value,
+        }
+
     def to_dict(self) -> Dict[str, Any]:
-        """Converts the swap request to a dictionary."""
+        """Converts the swap request to a dictionary with float as string for precision."""
         return {
             "from": self.from_symbol,
             "to": self.to_symbol,
-            "amount": self.amount,
+            "amount": str(self.amount),
             "type": self.swap_type.value,
             "direction": self.direction.value,
             "pair": self.pair,
         }
 
 
-class SwapQuote:
+class SwapQuote(BaseModel):
     """Represents a price quote for a swap."""
+
+    # Configuration Pydantic
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="forbid",
+    )
+
+    rate: float = Field(
+        ..., description="Exchange rate (how many 'to' assets per 'from' asset)"
+    )
+    from_symbol: str = Field(..., description="Symbol of the asset to swap from")
+    to_symbol: str = Field(..., description="Symbol of the asset to swap to")
+    fees: float = Field(default=0.0, description="Total fees (percentage or absolute)")
+    slippage: float = Field(default=0.0, description="Expected slippage (DEX)")
+    gas_estimate: Optional[float] = Field(
+        default=None, description="Estimated gas cost (DEX only)"
+    )
 
     def __init__(
         self,
@@ -117,12 +186,30 @@ class SwapQuote:
         slippage: Expected slippage (DEX)
         gas_estimate: Estimated gas cost (DEX only)
         """
-        self.rate = rate
-        self.from_symbol = from_symbol
-        self.to_symbol = to_symbol
-        self.fees = fees
-        self.slippage = slippage
-        self.gas_estimate = gas_estimate
+        super().__init__(
+            rate=rate,
+            from_symbol=from_symbol,
+            to_symbol=to_symbol,
+            fees=fees,
+            slippage=slippage,
+            gas_estimate=gas_estimate,
+        )
+
+    @field_validator("from_symbol", "to_symbol")
+    @classmethod
+    def validate_symbols(cls, v):
+        """Valide que les symboles sont des chaînes non vides."""
+        if not isinstance(v, str) or not v:
+            raise ValueError("Symbol must be a non-empty string")
+        return v.upper()
+
+    @field_validator("rate", "fees", "slippage")
+    @classmethod
+    def validate_positive(cls, v):
+        """Valide que les valeurs sont positives ou nulles."""
+        if v < 0:
+            raise ValueError("Value must be non-negative")
+        return v
 
     def estimate_output(self, input_amount: float) -> float:
         """Estimates output amount for given input."""
@@ -131,20 +218,54 @@ class SwapQuote:
         net_output = gross_output * (1 - self.fees) * (1 - self.slippage)
         return net_output
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Converts the quote to a dictionary."""
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
         return {
-            "rate": self.rate,
+            "rate": str(self.rate),
+            "from_symbol": self.from_symbol,
+            "to_symbol": self.to_symbol,
+            "fees": str(self.fees),
+            "slippage": str(self.slippage),
+            "gas_estimate": str(self.gas_estimate) if self.gas_estimate is not None else None,
+        }
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converts the quote to a dictionary with float as string for precision."""
+        return {
+            "rate": str(self.rate),
             "from": self.from_symbol,
             "to": self.to_symbol,
-            "fees": self.fees,
-            "slippage": self.slippage,
-            "gas_estimate": self.gas_estimate,
+            "fees": str(self.fees),
+            "slippage": str(self.slippage),
+            "gas_estimate": str(self.gas_estimate) if self.gas_estimate is not None else None,
         }
 
 
-class SwapResult:
+class SwapResult(BaseModel):
     """Represents the result of an executed swap."""
+
+    # Configuration Pydantic
+    model_config = ConfigDict(
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+        extra="forbid",
+    )
+
+    request: SwapRequest = Field(..., description="Original swap request")
+    executed_rate: float = Field(..., description="Actual execution rate")
+    from_amount: float = Field(..., description="Amount swapped from")
+    to_amount: float = Field(..., description="Amount received")
+    fees_paid: float = Field(..., description="Total fees paid")
+    transaction_id: str = Field(
+        ..., description="Exchange order ID or blockchain tx hash"
+    )
+    timestamp: float = Field(..., description="Execution timestamp")
+    gas_used: Optional[float] = Field(
+        default=None, description="Actual gas used (DEX only)"
+    )
+    expected_rate: float = Field(default=0.0, description="Expected rate")
+    slippage: float = Field(default=0.0, description="Calculated slippage")
 
     def __init__(
         self,
@@ -156,6 +277,7 @@ class SwapResult:
         transaction_id: str,
         timestamp: float,
         gas_used: Optional[float] = None,
+        **data
     ):
         """
         Creates a swap result.
@@ -170,38 +292,61 @@ class SwapResult:
         timestamp: Execution timestamp
         gas_used: Actual gas used (DEX only)
         """
-        self.request = request
-        self.executed_rate = executed_rate
-        self.from_amount = from_amount
-        self.to_amount = to_amount
-        self.fees_paid = fees_paid
-        self.transaction_id = transaction_id
-        self.timestamp = timestamp
-        self.gas_used = gas_used
-
         # Calculate slippage from expected
-        # The executed_rate is what we got, expected_rate is what we should have gotten
-        self.expected_rate = to_amount / from_amount if from_amount > 0 else 0
-        # Slippage is the percentage difference between expected and executed rates
-        if self.expected_rate > 0 and executed_rate > 0:
-            # For example: if we expected 0.4 BTC but got 0.395 BTC for 10000 USDC
-            # expected_rate = 0.395/10000 = 0.0000395
-            # executed_rate = 1/25316 = 0.0000395 (the actual rate we got)
-            # slippage = difference between them
-            self.slippage = abs((self.expected_rate - executed_rate) / executed_rate)
+        expected_rate = to_amount / from_amount if from_amount > 0 else 0
+        if expected_rate > 0 and executed_rate > 0:
+            slippage = abs((expected_rate - executed_rate) / executed_rate)
         else:
-            self.slippage = 0
+            slippage = 0
+
+        super().__init__(
+            request=request,
+            executed_rate=executed_rate,
+            from_amount=from_amount,
+            to_amount=to_amount,
+            fees_paid=fees_paid,
+            transaction_id=transaction_id,
+            timestamp=timestamp,
+            gas_used=gas_used,
+            expected_rate=expected_rate,
+            slippage=slippage,
+            **data
+        )
+
+    @field_validator("from_amount", "to_amount", "fees_paid")
+    @classmethod
+    def validate_positive(cls, v):
+        """Valide que les montants sont positifs ou nuls."""
+        if v < 0:
+            raise ValueError("Amount must be non-negative")
+        return v
+
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
+        return {
+            "request": self.request.model_dump(),
+            "executed_rate": str(self.executed_rate),
+            "from_amount": str(self.from_amount),
+            "to_amount": str(self.to_amount),
+            "fees_paid": str(self.fees_paid),
+            "transaction_id": self.transaction_id,
+            "timestamp": str(self.timestamp),
+            "gas_used": str(self.gas_used) if self.gas_used is not None else None,
+            "expected_rate": str(self.expected_rate),
+            "slippage": str(self.slippage),
+        }
 
     def to_dict(self) -> Dict[str, Any]:
-        """Converts the result to a dictionary."""
+        """Converts the result to a dictionary with float as string for precision."""
         return {
             "request": self.request.to_dict(),
-            "executed_rate": self.executed_rate,
-            "from_amount": self.from_amount,
-            "to_amount": self.to_amount,
-            "fees_paid": self.fees_paid,
+            "executed_rate": str(self.executed_rate),
+            "from_amount": str(self.from_amount),
+            "to_amount": str(self.to_amount),
+            "fees_paid": str(self.fees_paid),
             "transaction_id": self.transaction_id,
-            "timestamp": self.timestamp,
-            "gas_used": self.gas_used,
-            "slippage": self.slippage,
+            "timestamp": str(self.timestamp),
+            "gas_used": str(self.gas_used) if self.gas_used is not None else None,
+            "slippage": str(self.slippage),
         }

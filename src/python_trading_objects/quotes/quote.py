@@ -1,21 +1,33 @@
 import json
 import math
 from abc import ABC, abstractmethod
+from typing import Any, ClassVar, Dict
 
-from python_trading_objects.quotes.assertion import bot_assert
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
 
-class Quote(ABC):
+class Quote(BaseModel, ABC):
     """
     Classe abstraite de base pour toutes les devises.
 
     Gère les montants et applique une précision spécifique.
     """
 
-    # Précisions par défaut pour les classes de devise.
-    precisions = {"Token": 5, "USD": 2}
+    # Configuration Pydantic
+    model_config = ConfigDict(
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+        extra="forbid",
+    )
 
-    def __init__(self, amount: float, _from_factory: bool = False):
+    # Précisions par défaut pour les classes de devise.
+    precisions: ClassVar[Dict[str, int]] = {"Token": 5, "USD": 2}
+
+    # Champs Pydantic
+    amount: float = Field(..., description="Le montant de la devise")
+    precision: int = Field(default=8, description="La précision numérique")
+
+    def __init__(self, amount: float, _from_factory: bool = False, **data):
         """
         Initialise une instance de Quote.
 
@@ -25,17 +37,56 @@ class Quote(ABC):
         """
         # La vérification _from_factory est effectuée dans les classes concrètes héritant de Quote.
 
-        child_class = self.get_child_class()
-        # Détermine la précision en fonction du nom de la classe fille.
-        self.precision = Quote.precisions.get(
-            child_class.__name__, 8 if child_class.__name__ == "Token" else 2
-        )
+        # Si precision n'est pas dans data, on la calcule
+        if "precision" not in data:
+            child_class = self.__class__
+            # Détermine la précision en fonction du nom de la classe fille.
+            precision = Quote.precisions.get(
+                child_class.__name__, 8 if child_class.__name__ == "Token" else 2
+            )
+            # Tronque le montant seulement si on calcule la précision nous-mêmes
+            truncated_amount = self._truncate_to_precision_static(amount, precision)
+        else:
+            precision = data.pop("precision")  # Retirer de data pour éviter les doublons
+            # Ne pas retronquer - le montant a déjà été tronqué par la classe fille
+            truncated_amount = float(amount)
 
-        self.amount = self.truncate_to_precision(amount)
+        # Appelle le constructeur de BaseModel
+        super().__init__(amount=truncated_amount, precision=precision, **data)
 
-    def get_child_class(self):
-        """Retourne le type de la classe fille de l'instance courante."""
-        return self.__class__
+    @field_validator("amount", mode="before")
+    @classmethod
+    def validate_amount(cls, v):
+        """Valide que le montant est un nombre."""
+        if not isinstance(v, (float, int)):
+            raise TypeError(f"Amount must be float or int, got {type(v)}")
+        return float(v)
+
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        """Sérialise le modèle avec les float en string pour préserver la précision."""
+        return {
+            "amount": str(self.amount),
+            "precision": self.precision,
+        }
+
+    @staticmethod
+    def _truncate_to_precision_static(amount: float, precision: int) -> float:
+        """
+        Tronque une valeur à la précision définie (sans arrondi).
+
+        Paramètres:
+        amount (float): Le montant à tronquer.
+        precision (int): La précision à appliquer.
+
+        Retourne:
+        float: Le montant tronqué.
+        """
+        if not isinstance(amount, (float, int)):
+            raise TypeError(f"Amount must be float or int, got {type(amount)}")
+        factor = 10**precision
+        truncated_amount = math.floor(amount * factor) / factor
+        return float(truncated_amount)
 
     def truncate_to_precision(self, amount: float) -> float:
         """
@@ -47,10 +98,7 @@ class Quote(ABC):
         Retourne:
         float: Le montant tronqué.
         """
-        bot_assert(amount, (float, int))
-        factor = 10**self.precision
-        truncated_amount = math.floor(amount * factor) / factor
-        return float(truncated_amount)
+        return self._truncate_to_precision_static(amount, self.precision)
 
     @staticmethod
     def set_precision(class_name: str, precision: int):
@@ -65,8 +113,14 @@ class Quote(ABC):
 
     def __eq__(self, other):
         """Vérifie si deux instances de Quote sont égales en montant."""
+        from python_trading_objects.quotes.assertion import bot_assert
+
         bot_assert(other, Quote)
         return self.amount == other.amount
+
+    def __hash__(self):
+        """Rend la classe hashable pour utilisation dans des sets/dicts."""
+        return hash((self.__class__.__name__, self.amount))
 
     @abstractmethod
     def __str__(self):
@@ -109,8 +163,8 @@ class Quote(ABC):
         pass
 
     def to_dict(self):
-        """Convertit l'objet en dictionnaire."""
-        return dict(price=self.amount)
+        """Convertit l'objet en dictionnaire avec les float en string pour préserver la précision."""
+        return {"price": str(self.amount)}
 
     def to_json(self):
         """Convertit l'objet en JSON."""
