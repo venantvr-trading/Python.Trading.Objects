@@ -25,7 +25,7 @@ def test_price_creation_via_factory(bot_pair):
 def test_price_direct_instantiation_raises_error():
     """Test that direct instantiation of Price raises a TypeError."""
     with pytest.raises(
-            TypeError, match="Use BotPair\.create_price\(\) to instantiate Price\."
+        TypeError, match="Use BotPair\.create_price\(\) to instantiate Price\."
     ):
         Price(25000.0, "BTC", "USD")
 

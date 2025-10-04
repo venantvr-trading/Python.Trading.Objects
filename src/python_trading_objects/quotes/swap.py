@@ -1,12 +1,14 @@
 """
 Unified swap/trade abstractions for CEX and DEX operations.
 """
+
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class SwapType(Enum):
     """Types of swaps available across exchanges."""
+
     MARKET = "market"  # CEX market order / DEX instant swap
     LIMIT = "limit"  # CEX limit order / DEX limit order (1inch, etc)
     TWAP = "twap"  # Time-weighted average price (both)
@@ -15,6 +17,7 @@ class SwapType(Enum):
 
 class SwapDirection(Enum):
     """Direction of the swap operation."""
+
     BUY = "buy"  # Swap quote → base (USDC → BTC)
     SELL = "sell"  # Swap base → quote (BTC → USDC)
     SWAP = "swap"  # Generic swap (any → any)
@@ -24,15 +27,15 @@ class SwapRequest:
     """Represents a swap request between two assets."""
 
     def __init__(
-            self,
-            from_symbol: str,
-            to_symbol: str,
-            amount: float,
-            swap_type: SwapType = SwapType.MARKET
+        self,
+        from_symbol: str,
+        to_symbol: str,
+        amount: float,
+        swap_type: SwapType = SwapType.MARKET,
     ):
         """
         Creates a swap request.
-        
+
         Parameters:
         from_symbol: Symbol of the asset to swap from
         to_symbol: Symbol of the asset to swap to
@@ -87,7 +90,7 @@ class SwapRequest:
             "amount": self.amount,
             "type": self.swap_type.value,
             "direction": self.direction.value,
-            "pair": self.pair
+            "pair": self.pair,
         }
 
 
@@ -95,17 +98,17 @@ class SwapQuote:
     """Represents a price quote for a swap."""
 
     def __init__(
-            self,
-            rate: float,
-            from_symbol: str,
-            to_symbol: str,
-            fees: float = 0.0,
-            slippage: float = 0.0,
-            gas_estimate: Optional[float] = None
+        self,
+        rate: float,
+        from_symbol: str,
+        to_symbol: str,
+        fees: float = 0.0,
+        slippage: float = 0.0,
+        gas_estimate: Optional[float] = None,
     ):
         """
         Creates a swap quote.
-        
+
         Parameters:
         rate: Exchange rate (how many 'to' assets per 'from' asset)
         from_symbol: Symbol of the asset to swap from
@@ -136,7 +139,7 @@ class SwapQuote:
             "to": self.to_symbol,
             "fees": self.fees,
             "slippage": self.slippage,
-            "gas_estimate": self.gas_estimate
+            "gas_estimate": self.gas_estimate,
         }
 
 
@@ -144,19 +147,19 @@ class SwapResult:
     """Represents the result of an executed swap."""
 
     def __init__(
-            self,
-            request: SwapRequest,
-            executed_rate: float,
-            from_amount: float,
-            to_amount: float,
-            fees_paid: float,
-            transaction_id: str,
-            timestamp: float,
-            gas_used: Optional[float] = None
+        self,
+        request: SwapRequest,
+        executed_rate: float,
+        from_amount: float,
+        to_amount: float,
+        fees_paid: float,
+        transaction_id: str,
+        timestamp: float,
+        gas_used: Optional[float] = None,
     ):
         """
         Creates a swap result.
-        
+
         Parameters:
         request: Original swap request
         executed_rate: Actual execution rate
@@ -200,5 +203,5 @@ class SwapResult:
             "transaction_id": self.transaction_id,
             "timestamp": self.timestamp,
             "gas_used": self.gas_used,
-            "slippage": self.slippage
+            "slippage": self.slippage,
         }

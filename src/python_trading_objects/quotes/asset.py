@@ -13,23 +13,33 @@ class Asset(Quote):
     def __init__(self, amount: float, symbol: str, _from_factory: bool = False):
         """
         Initializes an Asset instance.
-        
+
         Parameters:
         amount (float): The asset amount.
         symbol (str): The asset symbol (USD, USDC, EUR, etc.).
         _from_factory (bool): Indicates if instance is created via factory.
-        
+
         Raises:
         TypeError: If not instantiated via BotPair factory methods.
         """
         if not _from_factory:
-            raise TypeError(f"Use BotPair.create_asset() or create_{symbol.lower()}() to instantiate Asset.")
+            raise TypeError(
+                f"Use BotPair.create_asset() or create_{symbol.lower()}() to instantiate Asset."
+            )
 
         bot_assert(amount, (float, int))
 
-        # Must set symbol before calling super().__init__ 
+        # Must set symbol before calling super().__init__
         self.__symbol = symbol
-        self.__is_stablecoin = symbol in ["USD", "USDC", "USDT", "DAI", "BUSD", "TUSD", "USDP"]
+        self.__is_stablecoin = symbol in [
+            "USD",
+            "USDC",
+            "USDT",
+            "DAI",
+            "BUSD",
+            "TUSD",
+            "USDP",
+        ]
         self.__is_fiat = symbol in ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"]
 
         super().__init__(amount, _from_factory=_from_factory)
@@ -67,13 +77,13 @@ class Asset(Quote):
     def __lt__(self, other):
         """
         Compares if current instance is less than another Asset or number.
-        
+
         Parameters:
         other (Asset or float): The amount to compare.
-        
+
         Returns:
         bool: True if instance is less, False otherwise.
-        
+
         Raises:
         TypeError: If 'other' is not an Asset or number.
         """
@@ -83,18 +93,20 @@ class Asset(Quote):
             return self.amount < other.amount
         elif isinstance(other, float):
             return self.amount < other
-        raise TypeError(f"Operand must be an instance of {self.__symbol} or a number (float)")
+        raise TypeError(
+            f"Operand must be an instance of {self.__symbol} or a number (float)"
+        )
 
     def __add__(self, other):
         """
         Adds two Asset instances.
-        
+
         Parameters:
         other (Asset): The other Asset instance to add.
-        
+
         Returns:
         Asset: A new instance representing the sum.
-        
+
         Raises:
         TypeError: If 'other' is not an Asset instance or has different symbol.
         """
@@ -103,17 +115,19 @@ class Asset(Quote):
                 raise TypeError(f"Cannot add {self.__symbol} with {other.get_symbol()}")
             # Return USD instance if self is USD
             if isinstance(self, USD):
-                return USD(self.amount + other.amount, self.__symbol, _from_factory=True)
+                return USD(
+                    self.amount + other.amount, self.__symbol, _from_factory=True
+                )
             return Asset(self.amount + other.amount, self.__symbol, _from_factory=True)
         raise TypeError(f"Operand must be an instance of {self.__symbol}")
 
     def __radd__(self, other):
         """
         Handles addition when Asset is on the right side of the operator.
-        
+
         Parameters:
         other (int, float): The other operand.
-        
+
         Returns:
         Asset: A new instance representing the sum.
         """
@@ -127,29 +141,33 @@ class Asset(Quote):
     def __sub__(self, other):
         """
         Subtracts one Asset instance from another.
-        
+
         Parameters:
         other (Asset): The instance to subtract.
-        
+
         Returns:
         Asset: A new instance representing the difference.
-        
+
         Raises:
         TypeError: If 'other' is not an Asset instance or has different symbol.
         """
         if isinstance(other, Asset):
             if other.get_symbol() != self.__symbol:
-                raise TypeError(f"Cannot subtract {other.get_symbol()} from {self.__symbol}")
+                raise TypeError(
+                    f"Cannot subtract {other.get_symbol()} from {self.__symbol}"
+                )
             # Return USD instance if self is USD
             if isinstance(self, USD):
-                return USD(self.amount - other.amount, self.__symbol, _from_factory=True)
+                return USD(
+                    self.amount - other.amount, self.__symbol, _from_factory=True
+                )
             return Asset(self.amount - other.amount, self.__symbol, _from_factory=True)
         raise TypeError(f"Operand must be an instance of {self.__symbol}")
 
     def __neg__(self):
         """
         Returns the negative amount of the current Asset instance.
-        
+
         Returns:
         Asset: A new instance representing the negative amount.
         """
@@ -161,13 +179,13 @@ class Asset(Quote):
     def __mul__(self, other):
         """
         Multiplies the Asset instance by a number.
-        
+
         Parameters:
         other (float): The number to multiply by.
-        
+
         Returns:
         Asset: A new instance representing the result.
-        
+
         Raises:
         TypeError: If 'other' is not a float.
         """
@@ -180,19 +198,19 @@ class Asset(Quote):
     def __truediv__(self, other):
         """
         Divides the Asset instance by a number, another Asset, or a Price.
-        
+
         Parameters:
         other (int, float, Asset, or Price): The divisor.
-        
+
         Returns:
         Asset, float, or Token: Depending on the type of 'other'.
-        
+
         Raises:
         TypeError: If 'other' is not a valid type.
         ZeroDivisionError: If division by zero is attempted.
         """
-        from python_trading_objects.quotes.price import Price
         from python_trading_objects.quotes.coin import Token
+        from python_trading_objects.quotes.price import Price
 
         if isinstance(other, (int, float)):
             if other == 0:
@@ -214,7 +232,9 @@ class Asset(Quote):
             if other.price == 0:
                 raise ZeroDivisionError("Division by zero not allowed")
             # Division Asset / Price gives tokens
-            return Token(self.amount / other.price, other.get_base(), _from_factory=True)
+            return Token(
+                self.amount / other.price, other.get_base(), _from_factory=True
+            )
 
         raise TypeError(f"Operand must be a number, {self.__symbol} or Price")
 
@@ -231,10 +251,12 @@ class Asset(Quote):
 class USD(Asset):
     """Alias for compatibility with legacy code."""
 
-    def __init__(self, amount: float, quote_symbol: str = "USD", _from_factory: bool = False):
+    def __init__(
+        self, amount: float, quote_symbol: str = "USD", _from_factory: bool = False
+    ):
         """
         Initializes a USD instance (legacy compatibility).
-        
+
         Parameters:
         amount (float): The USD amount.
         quote_symbol (str): The quote symbol (default: USD).

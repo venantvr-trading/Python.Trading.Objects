@@ -2,7 +2,7 @@
 
 PYTHON := $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 PIP := $(if $(wildcard .venv/bin/pip),.venv/bin/pip,pip3)
-SOURCES := test
+SOURCES := src/python_trading_objects
 
 # Default target
 help:
@@ -28,14 +28,13 @@ check: format test
 
 # Installation
 install:
-	$(PIP) install -r requirements.txt
-	$(PIP) install -r requirements-dev.txt
+	$(PIP) install -e .
+	$(PIP) install -e ".[dev]"
 
 # Updates
 update:
 	$(PIP) install --upgrade pip
-	$(PIP) install --upgrade -r requirements.txt
-	$(PIP) install --upgrade -r requirements-dev.txt
+	$(PIP) install --upgrade -e ".[dev]"
 
 # Clean up
 clean:

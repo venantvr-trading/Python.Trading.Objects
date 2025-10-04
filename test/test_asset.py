@@ -1,6 +1,7 @@
 """
 Unit tests for the Asset class and its integration with BotPair.
 """
+
 import pytest
 
 from python_trading_objects.quotes.asset import Asset
@@ -252,7 +253,7 @@ class TestBackwardCompatibility:
         usdc = pair.create_usd(1000.0)
 
         # USD class should have get_quote for compatibility
-        if hasattr(usdc, 'get_quote'):
+        if hasattr(usdc, "get_quote"):
             assert usdc.get_quote() == "USDC"
 
 
@@ -265,8 +266,8 @@ class TestAssetSerialization:
         eur = pair.create_quote_asset(1234.56)
 
         data = eur.to_dict()
-        assert data['price'] == 1234.56
-        assert data['symbol'] == 'EUR'
+        assert data["price"] == 1234.56
+        assert data["symbol"] == "EUR"
 
     def test_asset_to_json(self):
         """Test converting asset to JSON."""
@@ -278,8 +279,8 @@ class TestAssetSerialization:
         json_str = usdc.to_json()
         data = json.loads(json_str)
 
-        assert data['price'] == 5000.0
-        assert data['symbol'] == 'USDC'
+        assert data["price"] == 5000.0
+        assert data["symbol"] == "USDC"
 
 
 class TestExoticPairs:

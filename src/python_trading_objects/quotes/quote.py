@@ -13,10 +13,7 @@ class Quote(ABC):
     """
 
     # Précisions par défaut pour les classes de devise.
-    precisions = {
-        "Token": 5,
-        "USD": 2
-    }
+    precisions = {"Token": 5, "USD": 2}
 
     def __init__(self, amount: float, _from_factory: bool = False):
         """
@@ -30,7 +27,9 @@ class Quote(ABC):
 
         child_class = self.get_child_class()
         # Détermine la précision en fonction du nom de la classe fille.
-        self.precision = Quote.precisions.get(child_class.__name__, 8 if child_class.__name__ == "Token" else 2)
+        self.precision = Quote.precisions.get(
+            child_class.__name__, 8 if child_class.__name__ == "Token" else 2
+        )
 
         self.amount = self.truncate_to_precision(amount)
 
@@ -49,7 +48,7 @@ class Quote(ABC):
         float: Le montant tronqué.
         """
         bot_assert(amount, (float, int))
-        factor = 10 ** self.precision
+        factor = 10**self.precision
         truncated_amount = math.floor(amount * factor) / factor
         return float(truncated_amount)
 

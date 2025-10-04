@@ -10,7 +10,13 @@ class Price:
     Fournit des méthodes pour manipuler le prix et effectuer des opérations arithmétiques.
     """
 
-    def __init__(self, price: float, base_symbol: str, quote_symbol: str, _from_factory: bool = False):
+    def __init__(
+        self,
+        price: float,
+        base_symbol: str,
+        quote_symbol: str,
+        _from_factory: bool = False,
+    ):
         """
         Initialise une instance de Price.
 
@@ -58,7 +64,9 @@ class Price:
         TypeError: Si 'other' n'est pas une instance de Price.
         """
         bot_assert(other, Price)
-        return Price(self.price + other.price, self.__base, self.__quote, _from_factory=True)
+        return Price(
+            self.price + other.price, self.__base, self.__quote, _from_factory=True
+        )
 
     def __sub__(self, other):
         """
@@ -74,7 +82,9 @@ class Price:
         TypeError: Si 'other' n'est pas de type Price.
         """
         bot_assert(other, Price)
-        return Price(self.price - other.price, self.__base, self.__quote, _from_factory=True)
+        return Price(
+            self.price - other.price, self.__base, self.__quote, _from_factory=True
+        )
 
     def __truediv__(self, other):
         """
@@ -94,7 +104,9 @@ class Price:
         if isinstance(other, (int, float)):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Price(self.price / other, self.__base, self.__quote, _from_factory=True)
+            return Price(
+                self.price / other, self.__base, self.__quote, _from_factory=True
+            )
         if isinstance(other, Price):
             if other.price == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
@@ -115,13 +127,15 @@ class Price:
         Exception:
         TypeError: Si 'other' n'est pas un float, int ou Token.
         """
-        from python_trading_objects.quotes.usd import USD
         from python_trading_objects.quotes.coin import Token
+        from python_trading_objects.quotes.usd import USD
 
         bot_assert(other, (int, float, Token))
 
         if isinstance(other, (int, float)):
-            return Price(self.price * other, self.__base, self.__quote, _from_factory=True)
+            return Price(
+                self.price * other, self.__base, self.__quote, _from_factory=True
+            )
         if isinstance(other, Token):
             amount = self.price * other.amount
             return USD(amount, self.__quote, _from_factory=True)

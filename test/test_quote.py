@@ -3,10 +3,9 @@ import json
 # noinspection PyPackageRequirements
 import pytest
 
-from python_trading_objects.quotes import BotPair, Quote
-from python_trading_objects.quotes import Token  # Pour tester les classes filles concrètes
+from python_trading_objects.quotes import (  # Pour tester les classes filles concrètes
+    BotPair, Quote, Token)
 from python_trading_objects.quotes.assertion import bot_assert
-
 
 # from typing import re # Removed as re.escape is no longer used directly
 
@@ -29,15 +28,15 @@ def test_bot_assert_invalid_type_raises_error():
     """Test that bot_assert raises a TypeError for an invalid type."""
     # Manually escape special characters for regex matching
     with pytest.raises(
-            TypeError, match="Le paramètre doit être de type <class 'float'>"
+        TypeError, match="Le paramètre doit être de type <class 'float'>"
     ):
         bot_assert(10, float)  # 10 is an int, not a float (strict check for float)
     with pytest.raises(TypeError, match="Le paramètre doit être de type <class 'str'>"):
         bot_assert(123, str)  # 123 is an int, not a string
     # Escape parentheses, angle brackets, and periods for the tuple representation
     with pytest.raises(
-            TypeError,
-            match=r"Le paramètre doit être de type \(<class 'int'>, <class 'float'>\)",
+        TypeError,
+        match=r"Le paramètre doit être de type \(<class 'int'>, <class 'float'>\)",
     ):
         bot_assert(
             "not a number", (int, float)
@@ -89,9 +88,7 @@ def test_quote_equality_different_types_raises_error(bot_pair):
     """Test that equality comparison between Quote and non-Quote type raises a TypeError."""
     token = bot_pair.create_token(10.0)
     # Manually escape special characters for regex matching
-    expected_error_message_regex = (
-        r"Le paramètre doit être de type <class 'python_trading_objects\.quotes\.quote\.Quote'>"
-    )
+    expected_error_message_regex = r"Le paramètre doit être de type <class 'python_trading_objects\.quotes\.quote\.Quote'>"
     with pytest.raises(TypeError, match=expected_error_message_regex):
         _ = token == 10.0  # Comparison with a float, not a Quote instance
 

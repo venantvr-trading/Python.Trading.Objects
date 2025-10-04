@@ -1,14 +1,14 @@
 """
 Unit tests for the Swap classes (SwapRequest, SwapQuote, SwapResult).
 """
+
 import time
 
 import pytest
 
-from python_trading_objects.quotes.swap import (
-    SwapRequest, SwapQuote, SwapResult,
-    SwapType, SwapDirection
-)
+from python_trading_objects.quotes.swap import (SwapDirection, SwapQuote,
+                                                SwapRequest, SwapResult,
+                                                SwapType)
 
 
 class TestSwapRequest:
@@ -16,11 +16,7 @@ class TestSwapRequest:
 
     def test_swap_request_creation(self):
         """Test creating a basic swap request."""
-        swap = SwapRequest(
-            from_symbol="USDC",
-            to_symbol="BTC",
-            amount=1000.0
-        )
+        swap = SwapRequest(from_symbol="USDC", to_symbol="BTC", amount=1000.0)
 
         assert swap.from_symbol == "USDC"
         assert swap.to_symbol == "BTC"
@@ -32,10 +28,7 @@ class TestSwapRequest:
     def test_swap_request_with_limit_type(self):
         """Test creating a limit swap request."""
         swap = SwapRequest(
-            from_symbol="BTC",
-            to_symbol="USDC",
-            amount=0.5,
-            swap_type=SwapType.LIMIT
+            from_symbol="BTC", to_symbol="USDC", amount=0.5, swap_type=SwapType.LIMIT
         )
 
         assert swap.swap_type == SwapType.LIMIT
@@ -93,16 +86,16 @@ class TestSwapRequest:
             from_symbol="USDT",
             to_symbol="BTC",
             amount=10000.0,
-            swap_type=SwapType.LIMIT
+            swap_type=SwapType.LIMIT,
         )
 
         data = swap.to_dict()
-        assert data['from'] == "USDT"
-        assert data['to'] == "BTC"
-        assert data['amount'] == 10000.0
-        assert data['type'] == "limit"
-        assert data['direction'] == "buy"
-        assert data['pair'] == "USDT/BTC"
+        assert data["from"] == "USDT"
+        assert data["to"] == "BTC"
+        assert data["amount"] == 10000.0
+        assert data["type"] == "limit"
+        assert data["direction"] == "buy"
+        assert data["pair"] == "USDT/BTC"
 
 
 class TestSwapQuote:
@@ -115,7 +108,7 @@ class TestSwapQuote:
             from_symbol="USDC",
             to_symbol="BTC",
             fees=0.001,  # 0.1%
-            slippage=0.002  # 0.2%
+            slippage=0.002,  # 0.2%
         )
 
         assert quote.rate == 25000.0
@@ -133,7 +126,7 @@ class TestSwapQuote:
             to_symbol="BTC",
             fees=0.003,  # 0.3% DEX fee
             slippage=0.005,  # 0.5% slippage
-            gas_estimate=25.0  # $25 in gas
+            gas_estimate=25.0,  # $25 in gas
         )
 
         assert quote.gas_estimate == 25.0
@@ -145,7 +138,7 @@ class TestSwapQuote:
             from_symbol="USDC",
             to_symbol="BTC",
             fees=0.001,  # 0.1% fee
-            slippage=0.002  # 0.2% slippage
+            slippage=0.002,  # 0.2% slippage
         )
 
         # Input 10000 USDC
@@ -164,16 +157,16 @@ class TestSwapQuote:
             to_symbol="ETH",
             fees=0.0025,
             slippage=0.001,
-            gas_estimate=15.0
+            gas_estimate=15.0,
         )
 
         data = quote.to_dict()
-        assert data['rate'] == 3000.0
-        assert data['from'] == "USDC"
-        assert data['to'] == "ETH"
-        assert data['fees'] == 0.0025
-        assert data['slippage'] == 0.001
-        assert data['gas_estimate'] == 15.0
+        assert data["rate"] == 3000.0
+        assert data["from"] == "USDC"
+        assert data["to"] == "ETH"
+        assert data["fees"] == 0.0025
+        assert data["slippage"] == 0.001
+        assert data["gas_estimate"] == 15.0
 
 
 class TestSwapResult:
@@ -190,7 +183,7 @@ class TestSwapResult:
             to_amount=0.4008,
             fees_paid=10.0,  # $10 in fees
             transaction_id="0x123abc",
-            timestamp=time.time()
+            timestamp=time.time(),
         )
 
         assert result.request == request
@@ -213,7 +206,7 @@ class TestSwapResult:
             fees_paid=15.0,
             transaction_id="0xdef456",
             timestamp=time.time(),
-            gas_used=0.005  # 0.005 ETH in gas
+            gas_used=0.005,  # 0.005 ETH in gas
         )
 
         assert result.gas_used == 0.005
@@ -232,7 +225,7 @@ class TestSwapResult:
             to_amount=0.395,  # What we actually got
             fees_paid=10.0,
             transaction_id="abc123",
-            timestamp=time.time()
+            timestamp=time.time(),
         )
 
         # Actual rate = 0.395/10000 = 0.0000395
@@ -252,21 +245,21 @@ class TestSwapResult:
             fees_paid=50.0,
             transaction_id="order_12345",
             timestamp=1234567890.0,
-            gas_used=None
+            gas_used=None,
         )
 
         data = result.to_dict()
-        assert data['executed_rate'] == 25000.0
-        assert data['from_amount'] == 2.0
-        assert data['to_amount'] == 49950.0
-        assert data['fees_paid'] == 50.0
-        assert data['transaction_id'] == "order_12345"
-        assert data['timestamp'] == 1234567890.0
-        assert data['gas_used'] is None
-        assert 'slippage' in data
-        assert 'request' in data
-        assert data['request']['from'] == "BTC"
-        assert data['request']['to'] == "USDC"
+        assert data["executed_rate"] == 25000.0
+        assert data["from_amount"] == 2.0
+        assert data["to_amount"] == 49950.0
+        assert data["fees_paid"] == 50.0
+        assert data["transaction_id"] == "order_12345"
+        assert data["timestamp"] == 1234567890.0
+        assert data["gas_used"] is None
+        assert "slippage" in data
+        assert "request" in data
+        assert data["request"]["from"] == "BTC"
+        assert data["request"]["to"] == "USDC"
 
 
 class TestSwapTypes:

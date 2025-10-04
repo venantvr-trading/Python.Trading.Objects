@@ -24,7 +24,7 @@ def test_token_creation_via_factory(bot_pair):
 def test_token_direct_instantiation_raises_error():
     """Test that direct instantiation of Token raises a TypeError."""
     with pytest.raises(
-            TypeError, match=r"Use BotPair\.create_token\(\) to instantiate Token\."
+        TypeError, match=r"Use BotPair\.create_token\(\) to instantiate Token\."
     ):
         Token(10.0, "BTC")
 

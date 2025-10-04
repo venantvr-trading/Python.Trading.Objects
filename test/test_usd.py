@@ -25,7 +25,7 @@ def test_usd_direct_instantiation_raises_error():
     """Test that direct instantiation of USD raises a TypeError."""
     # Manually escape parentheses for regex matching
     with pytest.raises(
-            TypeError, match=r"Use BotPair\.create_usd\(\) to instantiate USD\."
+        TypeError, match=r"Use BotPair\.create_usd\(\) to instantiate USD\."
     ):
         USD(100.0, "USD")
 

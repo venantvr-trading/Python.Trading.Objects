@@ -57,7 +57,9 @@ class Token(Quote):
             return self.amount < other.amount
         elif isinstance(other, float):
             return self.amount < other
-        raise TypeError(f"L'opérande doit être une instance de {self._Token__base} ou un nombre (float)")
+        raise TypeError(
+            f"L'opérande doit être une instance de {self._Token__base} ou un nombre (float)"
+        )
 
     def __add__(self, other):
         """
@@ -128,8 +130,8 @@ class Token(Quote):
         Exception:
         TypeError: Si 'other' n'est ni un float ni une instance de Price.
         """
+        from python_trading_objects.quotes.asset import USD, Asset
         from python_trading_objects.quotes.price import Price
-        from python_trading_objects.quotes.asset import Asset, USD
 
         bot_assert(other, (float, Price))
 
@@ -138,8 +140,12 @@ class Token(Quote):
         if isinstance(other, Price):
             # Return USD for backward compatibility when quote is USD
             if other.get_quote() == "USD":
-                return USD(self.amount * other.price, other.get_quote(), _from_factory=True)
-            return Asset(self.amount * other.price, other.get_quote(), _from_factory=True)
+                return USD(
+                    self.amount * other.price, other.get_quote(), _from_factory=True
+                )
+            return Asset(
+                self.amount * other.price, other.get_quote(), _from_factory=True
+            )
         return NotImplemented
 
     def __truediv__(self, other):
