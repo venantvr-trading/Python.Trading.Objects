@@ -280,7 +280,7 @@ class USD(Asset):
     """Alias for compatibility with legacy code."""
 
     def __init__(
-        self, amount: float, quote_symbol: str = "USD", _from_factory: bool = False
+            self, amount: float, quote_symbol: str = "USD", _from_factory: bool = False
     ):
         """
         Initializes a USD instance (legacy compatibility).

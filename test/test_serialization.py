@@ -6,16 +6,12 @@ import json
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 
-import pytest
 from pydantic import BaseModel
 
 from python_trading_objects.quotes import BotPair, Token
 from python_trading_objects.quotes.swap import (
-    SwapDirection,
     SwapQuote,
     SwapRequest,
-    SwapResult,
-    SwapType,
 )
 
 

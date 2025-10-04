@@ -25,11 +25,11 @@ class Price(BaseModel):
     quote_symbol: str = Field(..., description="Le symbole de la devise de cotation")
 
     def __init__(
-        self,
-        price: float,
-        base_symbol: str,
-        quote_symbol: str,
-        _from_factory: bool = False,
+            self,
+            price: float,
+            base_symbol: str,
+            quote_symbol: str,
+            _from_factory: bool = False,
     ):
         """
         Initialise une instance de Price.

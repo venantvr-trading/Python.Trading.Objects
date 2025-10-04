@@ -48,12 +48,12 @@ class SwapRequest(BaseModel):
     )
 
     def __init__(
-        self,
-        from_symbol: str,
-        to_symbol: str,
-        amount: float,
-        swap_type: SwapType = SwapType.MARKET,
-        **data
+            self,
+            from_symbol: str,
+            to_symbol: str,
+            amount: float,
+            swap_type: SwapType = SwapType.MARKET,
+            **data
     ):
         """
         Creates a swap request.
@@ -84,7 +84,7 @@ class SwapRequest(BaseModel):
 
     @staticmethod
     def _determine_direction_static(
-        from_symbol: str, to_symbol: str
+            from_symbol: str, to_symbol: str
     ) -> SwapDirection:
         """Determines if this is a buy, sell, or generic swap."""
         stablecoins = ["USD", "USDC", "USDT", "DAI", "BUSD", "EUR", "GBP"]
@@ -167,13 +167,13 @@ class SwapQuote(BaseModel):
     )
 
     def __init__(
-        self,
-        rate: float,
-        from_symbol: str,
-        to_symbol: str,
-        fees: float = 0.0,
-        slippage: float = 0.0,
-        gas_estimate: Optional[float] = None,
+            self,
+            rate: float,
+            from_symbol: str,
+            to_symbol: str,
+            fees: float = 0.0,
+            slippage: float = 0.0,
+            gas_estimate: Optional[float] = None,
     ):
         """
         Creates a swap quote.
@@ -268,16 +268,16 @@ class SwapResult(BaseModel):
     slippage: float = Field(default=0.0, description="Calculated slippage")
 
     def __init__(
-        self,
-        request: SwapRequest,
-        executed_rate: float,
-        from_amount: float,
-        to_amount: float,
-        fees_paid: float,
-        transaction_id: str,
-        timestamp: float,
-        gas_used: Optional[float] = None,
-        **data
+            self,
+            request: SwapRequest,
+            executed_rate: float,
+            from_amount: float,
+            to_amount: float,
+            fees_paid: float,
+            transaction_id: str,
+            timestamp: float,
+            gas_used: Optional[float] = None,
+            **data
     ):
         """
         Creates a swap result.
