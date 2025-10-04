@@ -1,7 +1,7 @@
 import json
-import math
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Dict
+from decimal import Decimal, ROUND_DOWN
+from typing import Any, ClassVar, Dict, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
@@ -24,10 +24,10 @@ class Quote(BaseModel, ABC):
     precisions: ClassVar[Dict[str, int]] = {"Token": 5, "USD": 2}
 
     # Champs Pydantic
-    amount: float = Field(..., description="Le montant de la devise")
+    amount: Decimal = Field(..., description="Le montant de la devise")
     precision: int = Field(default=8, description="La précision numérique")
 
-    def __init__(self, amount: float, _from_factory: bool = False, **data):
+    def __init__(self, amount: Union[Decimal, float, int, str], _from_factory: bool = False, **data):
         """
         Initialise une instance de Quote.
 
@@ -36,6 +36,10 @@ class Quote(BaseModel, ABC):
         _from_factory (bool): Interne, indique si l'instance est créée via une factory.
         """
         # La vérification _from_factory est effectuée dans les classes concrètes héritant de Quote.
+
+        # Convertir en Decimal si nécessaire
+        if not isinstance(amount, Decimal):
+            amount = Decimal(str(amount))
 
         # Si precision n'est pas dans data, on la calcule
         if "precision" not in data:
@@ -49,7 +53,7 @@ class Quote(BaseModel, ABC):
         else:
             precision = data.pop("precision")  # Retirer de data pour éviter les doublons
             # Ne pas retronquer - le montant a déjà été tronqué par la classe fille
-            truncated_amount = float(amount)
+            truncated_amount = amount
 
         # Appelle le constructeur de BaseModel
         super().__init__(amount=truncated_amount, precision=precision, **data)
@@ -57,10 +61,12 @@ class Quote(BaseModel, ABC):
     @field_validator("amount", mode="before")
     @classmethod
     def validate_amount(cls, v):
-        """Valide que le montant est un nombre."""
-        if not isinstance(v, (float, int)):
-            raise TypeError(f"Amount must be float or int, got {type(v)}")
-        return float(v)
+        """Valide que le montant est un nombre et le convertit en Decimal."""
+        if isinstance(v, Decimal):
+            return v
+        if isinstance(v, (float, int, str)):
+            return Decimal(str(v))
+        raise TypeError(f"Amount must be Decimal, float, int or str, got {type(v)}")
 
     @model_serializer
     def serialize_model(self) -> Dict[str, Any]:
@@ -71,32 +77,34 @@ class Quote(BaseModel, ABC):
         }
 
     @staticmethod
-    def _truncate_to_precision_static(amount: float, precision: int) -> float:
+    def _truncate_to_precision_static(amount: Union[Decimal, float, int], precision: int) -> Decimal:
         """
-        Tronque une valeur à la précision définie (sans arrondi).
+        Tronque une valeur à la précision définie (sans arrondi) en utilisant Decimal.
 
         Paramètres:
-        amount (float): Le montant à tronquer.
+        amount (Decimal|float|int): Le montant à tronquer.
         precision (int): La précision à appliquer.
 
         Retourne:
-        float: Le montant tronqué.
+        Decimal: Le montant tronqué.
         """
-        if not isinstance(amount, (float, int)):
-            raise TypeError(f"Amount must be float or int, got {type(amount)}")
-        factor = 10**precision
-        truncated_amount = math.floor(amount * factor) / factor
-        return float(truncated_amount)
+        if not isinstance(amount, Decimal):
+            amount = Decimal(str(amount))
 
-    def truncate_to_precision(self, amount: float) -> float:
+        # Créer le quantizer basé sur la précision (ex: 0.01 pour precision=2)
+        quantizer = Decimal(10) ** -precision
+        # Tronquer vers le bas (ROUND_DOWN)
+        return amount.quantize(quantizer, rounding=ROUND_DOWN)
+
+    def truncate_to_precision(self, amount: Union[Decimal, float, int]) -> Decimal:
         """
         Tronque une valeur à la précision définie (sans arrondi).
 
         Paramètres:
-        amount (float): Le montant à tronquer.
+        amount (Decimal|float|int): Le montant à tronquer.
 
         Retourne:
-        float: Le montant tronqué.
+        Decimal: Le montant tronqué.
         """
         return self._truncate_to_precision_static(amount, self.precision)
 

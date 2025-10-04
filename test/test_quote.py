@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 # noinspection PyPackageRequirements
 import pytest
@@ -6,6 +7,7 @@ import pytest
 from python_trading_objects.quotes import (  # Pour tester les classes filles concrètes
     BotPair, Quote, Token)
 from python_trading_objects.quotes.assertion import bot_assert
+
 
 # from typing import re # Removed as re.escape is no longer used directly
 
@@ -67,7 +69,7 @@ def test_quote_truncate_to_precision_token(bot_pair):
     Quote.set_precision("Token", 5)
 
     token = bot_pair.create_token(123.456789123)
-    assert token.amount == 123.45678
+    assert token.amount == Decimal("123.45678")
 
     Quote.set_precision("Token", original_precision)  # Restore
 
@@ -79,7 +81,7 @@ def test_quote_truncate_to_precision_usd(bot_pair):
     Quote.set_precision("USD", 2)
 
     usd = bot_pair.create_usd(123.456789)
-    assert usd.amount == 123.45
+    assert usd.amount == Decimal("123.45")
 
     Quote.set_precision("USD", original_precision)  # Restore
 
@@ -102,10 +104,10 @@ def test_quote_get_child_class(bot_pair):
 def test_quote_to_dict(bot_pair):
     """Test conversion of Quote (via Token) to dictionary."""
     token = bot_pair.create_token(1.234)
-    assert token.to_dict() == {"price": 1.234}
+    assert token.to_dict() == {"price": "1.23400"}
 
 
 def test_quote_to_json(bot_pair):
     """Test conversion of Quote (via Token) to JSON."""
     token = bot_pair.create_token(1.234)
-    assert json.loads(token.to_json()) == {"price": 1.234}
+    assert json.loads(token.to_json()) == {"price": "1.23400"}

@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 # noinspection PyPackageRequirements
 import pytest
@@ -121,8 +122,8 @@ def test_usd_truediv_by_usd(bot_pair):
     usd1 = bot_pair.create_usd(100.0)
     usd2 = bot_pair.create_usd(20.0)
     result = usd1 / usd2
-    assert isinstance(result, float)
-    assert result == 5.0
+    assert isinstance(result, Decimal)
+    assert result == Decimal("5.0")
 
 
 def test_usd_truediv_by_price(bot_pair):
@@ -161,13 +162,13 @@ def test_usd_division_by_zero_price_raises_error(bot_pair):
 def test_usd_to_dict(bot_pair):
     """Test conversion of USD to dictionary."""
     usd = bot_pair.create_usd(42.50)
-    assert usd.to_dict() == {"price": 42.50}
+    assert usd.to_dict() == {"price": "42.50"}
 
 
 def test_usd_to_json(bot_pair):
     """Test conversion of USD to JSON."""
     usd = bot_pair.create_usd(42.50)
-    assert json.loads(usd.to_json()) == {"price": 42.50}
+    assert json.loads(usd.to_json()) == {"price": "42.50"}
 
 
 def test_usd_zero_constant(bot_pair):

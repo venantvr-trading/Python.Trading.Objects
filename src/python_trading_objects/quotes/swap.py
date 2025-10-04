@@ -331,7 +331,7 @@ class SwapResult(BaseModel):
             "to_amount": str(self.to_amount),
             "fees_paid": str(self.fees_paid),
             "transaction_id": self.transaction_id,
-            "timestamp": str(self.timestamp),
+            "timestamp": self.timestamp,
             "gas_used": str(self.gas_used) if self.gas_used is not None else None,
             "expected_rate": str(self.expected_rate),
             "slippage": str(self.slippage),
@@ -346,7 +346,7 @@ class SwapResult(BaseModel):
             "to_amount": str(self.to_amount),
             "fees_paid": str(self.fees_paid),
             "transaction_id": self.transaction_id,
-            "timestamp": str(self.timestamp),
+            "timestamp": self.timestamp,
             "gas_used": str(self.gas_used) if self.gas_used is not None else None,
             "slippage": str(self.slippage),
         }

@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict
+from decimal import Decimal
+from typing import Any, Dict, Union
 
 from pydantic import Field, field_validator, model_serializer
 
@@ -15,12 +16,12 @@ class Asset(Quote):
 
     symbol: str = Field(..., description="Le symbole de l'actif")
 
-    def __init__(self, amount: float, symbol: str, _from_factory: bool = False):
+    def __init__(self, amount: Union[Decimal, float, int, str], symbol: str, _from_factory: bool = False):
         """
         Initializes an Asset instance.
 
         Parameters:
-        amount (float): The asset amount.
+        amount (Decimal|float|int|str): The asset amount.
         symbol (str): The asset symbol (USD, USDC, EUR, etc.).
         _from_factory (bool): Indicates if instance is created via factory.
 
@@ -32,7 +33,7 @@ class Asset(Quote):
                 f"Use BotPair.create_asset() or create_{symbol.lower()}() to instantiate Asset."
             )
 
-        bot_assert(amount, (float, int))
+        bot_assert(amount, (Decimal, float, int, str))
 
         # Determine precision based on asset type
         is_stablecoin = symbol in [
@@ -150,16 +151,17 @@ class Asset(Quote):
         Handles addition when Asset is on the right side of the operator.
 
         Parameters:
-        other (int, float): The other operand.
+        other (Decimal, int, float): The other operand.
 
         Returns:
         Asset: A new instance representing the sum.
         """
-        if isinstance(other, (int, float)):
+        if isinstance(other, (Decimal, int, float)):
+            other_decimal = other if isinstance(other, Decimal) else Decimal(str(other))
             # Return USD instance if self is USD
             if isinstance(self, USD):
-                return USD(self.amount + other, self.symbol, _from_factory=True)
-            return Asset(self.amount + other, self.symbol, _from_factory=True)
+                return USD(self.amount + other_decimal, self.symbol, _from_factory=True)
+            return Asset(self.amount + other_decimal, self.symbol, _from_factory=True)
         return NotImplemented
 
     def __sub__(self, other):
@@ -203,29 +205,30 @@ class Asset(Quote):
         Multiplies the Asset instance by a number.
 
         Parameters:
-        other (float): The number to multiply by.
+        other (Decimal, float, int): The number to multiply by.
 
         Returns:
         Asset: A new instance representing the result.
 
         Raises:
-        TypeError: If 'other' is not a float.
+        TypeError: If 'other' is not a number.
         """
-        bot_assert(other, float)
+        bot_assert(other, (Decimal, float, int))
+        other_decimal = other if isinstance(other, Decimal) else Decimal(str(other))
         # Return USD instance if self is USD
         if isinstance(self, USD):
-            return USD(self.amount * other, self.symbol, _from_factory=True)
-        return Asset(self.amount * other, self.symbol, _from_factory=True)
+            return USD(self.amount * other_decimal, self.symbol, _from_factory=True)
+        return Asset(self.amount * other_decimal, self.symbol, _from_factory=True)
 
     def __truediv__(self, other):
         """
         Divides the Asset instance by a number, another Asset, or a Price.
 
         Parameters:
-        other (int, float, Asset, or Price): The divisor.
+        other (Decimal, int, float, Asset, or Price): The divisor.
 
         Returns:
-        Asset, float, or Token: Depending on the type of 'other'.
+        Asset, Decimal, or Token: Depending on the type of 'other'.
 
         Raises:
         TypeError: If 'other' is not a valid type.
@@ -234,13 +237,14 @@ class Asset(Quote):
         from python_trading_objects.quotes.coin import Token
         from python_trading_objects.quotes.price import Price
 
-        if isinstance(other, (int, float)):
-            if other == 0:
+        if isinstance(other, (Decimal, int, float)):
+            other_decimal = other if isinstance(other, Decimal) else Decimal(str(other))
+            if other_decimal == 0:
                 raise ZeroDivisionError("Division by zero not allowed")
             # Return USD instance if self is USD
             if isinstance(self, USD):
-                return USD(self.amount / other, self.symbol, _from_factory=True)
-            return Asset(self.amount / other, self.symbol, _from_factory=True)
+                return USD(self.amount / other_decimal, self.symbol, _from_factory=True)
+            return Asset(self.amount / other_decimal, self.symbol, _from_factory=True)
 
         if isinstance(other, Asset):
             if other.amount == 0:
@@ -251,11 +255,13 @@ class Asset(Quote):
             return self.amount / other.amount
 
         if isinstance(other, Price):
-            if other.price == 0:
+            # Convert price to Decimal if it's a float
+            price_decimal = other.price if isinstance(other.price, Decimal) else Decimal(str(other.price))
+            if price_decimal == 0:
                 raise ZeroDivisionError("Division by zero not allowed")
             # Division Asset / Price gives tokens
             return Token(
-                self.amount / other.price, other.get_base(), _from_factory=True
+                self.amount / price_decimal, other.get_base(), _from_factory=True
             )
 
         raise TypeError(f"Operand must be a number, {self.symbol} or Price")

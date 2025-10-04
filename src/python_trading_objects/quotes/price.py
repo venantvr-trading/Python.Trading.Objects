@@ -179,7 +179,11 @@ class Price(BaseModel):
                 _from_factory=True,
             )
         if isinstance(other, Token):
-            amount = self.price * other.amount
+            # Convert price to Decimal if needed to multiply with Token.amount (which is Decimal)
+            from decimal import Decimal
+
+            price_decimal = self.price if isinstance(self.price, Decimal) else Decimal(str(self.price))
+            amount = price_decimal * other.amount
             # Return USD for backward compatibility when quote is USD
             if self.quote_symbol == "USD":
                 return USD(amount, self.quote_symbol, _from_factory=True)

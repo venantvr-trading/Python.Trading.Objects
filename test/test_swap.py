@@ -92,7 +92,7 @@ class TestSwapRequest:
         data = swap.to_dict()
         assert data["from"] == "USDT"
         assert data["to"] == "BTC"
-        assert data["amount"] == 10000.0
+        assert data["amount"] == "10000.0"
         assert data["type"] == "limit"
         assert data["direction"] == "buy"
         assert data["pair"] == "USDT/BTC"
@@ -161,12 +161,12 @@ class TestSwapQuote:
         )
 
         data = quote.to_dict()
-        assert data["rate"] == 3000.0
+        assert data["rate"] == "3000.0"
         assert data["from"] == "USDC"
         assert data["to"] == "ETH"
-        assert data["fees"] == 0.0025
-        assert data["slippage"] == 0.001
-        assert data["gas_estimate"] == 15.0
+        assert data["fees"] == "0.0025"
+        assert data["slippage"] == "0.001"
+        assert data["gas_estimate"] == "15.0"
 
 
 class TestSwapResult:
@@ -249,10 +249,10 @@ class TestSwapResult:
         )
 
         data = result.to_dict()
-        assert data["executed_rate"] == 25000.0
-        assert data["from_amount"] == 2.0
-        assert data["to_amount"] == 49950.0
-        assert data["fees_paid"] == 50.0
+        assert data["executed_rate"] == "25000.0"
+        assert data["from_amount"] == "2.0"
+        assert data["to_amount"] == "49950.0"
+        assert data["fees_paid"] == "50.0"
         assert data["transaction_id"] == "order_12345"
         assert data["timestamp"] == 1234567890.0
         assert data["gas_used"] is None

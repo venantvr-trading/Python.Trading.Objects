@@ -25,5 +25,6 @@ test/test_coin.py
 test/test_pair.py
 test/test_price.py
 test/test_quote.py
+test/test_serialization.py
 test/test_swap.py
 test/test_usd.py

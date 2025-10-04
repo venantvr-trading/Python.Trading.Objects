@@ -266,7 +266,7 @@ class TestAssetSerialization:
         eur = pair.create_quote_asset(1234.56)
 
         data = eur.to_dict()
-        assert data["price"] == 1234.56
+        assert data["price"] == "1234.56"
         assert data["symbol"] == "EUR"
 
     def test_asset_to_json(self):
@@ -279,7 +279,7 @@ class TestAssetSerialization:
         json_str = usdc.to_json()
         data = json.loads(json_str)
 
-        assert data["price"] == 5000.0
+        assert data["price"] == "5000.00"
         assert data["symbol"] == "USDC"
 
 

@@ -160,13 +160,13 @@ def test_price_greater_than_or_equal(bot_pair):
 def test_price_to_dict(bot_pair):
     """Test conversion of Price to dictionary."""
     price = bot_pair.create_price(25000.0)
-    assert price.to_dict() == {"price": 25000.0}
+    assert price.to_dict() == {"price": "25000.0"}
 
 
 def test_price_to_json(bot_pair):
     """Test conversion of Price to JSON."""
     price = bot_pair.create_price(25000.0)
-    assert json.loads(price.to_json()) == {"price": 25000.0}
+    assert json.loads(price.to_json()) == {"price": "25000.0"}
 
 
 def test_price_zero_constant(bot_pair):

@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 # noinspection PyPackageRequirements
 import pytest
@@ -112,7 +113,8 @@ def test_token_mul_by_price(bot_pair):
     price = bot_pair.create_price(20000.0)  # 20000 USD/BTC
     result = token * price
     assert isinstance(result, USD)
-    assert result.amount == 40000.0
+    assert isinstance(result.amount, Decimal)
+    assert result.amount == Decimal("40000.00")
     assert result.get_quote() == "USD"
 
 
@@ -130,8 +132,8 @@ def test_token_truediv_by_token(bot_pair):
     token1 = bot_pair.create_token(10.0)
     token2 = bot_pair.create_token(2.0)
     result = token1 / token2
-    assert isinstance(result, float)
-    assert result == 5.0
+    assert isinstance(result, Decimal)
+    assert result == Decimal("5")
 
 
 def test_token_division_by_zero_float_raises_error(bot_pair):
@@ -152,10 +154,14 @@ def test_token_division_by_zero_token_raises_error(bot_pair):
 def test_token_to_dict(bot_pair):
     """Test conversion of Token to dictionary."""
     token = bot_pair.create_token(1.23)
-    assert token.to_dict() == {"price": 1.23}
+    result = token.to_dict()
+    assert isinstance(result["price"], str)
+    assert result["price"] == "1.23000"  # Tronqué à précision 5
 
 
 def test_token_to_json(bot_pair):
     """Test conversion of Token to JSON."""
     token = bot_pair.create_token(1.23)
-    assert json.loads(token.to_json()) == {"price": 1.23}
+    result = json.loads(token.to_json())
+    assert isinstance(result["price"], str)
+    assert result["price"] == "1.23000"

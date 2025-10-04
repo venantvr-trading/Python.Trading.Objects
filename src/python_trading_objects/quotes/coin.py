@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict
+from decimal import Decimal
+from typing import Any, Dict, Union
 
 from pydantic import Field, model_serializer
 
@@ -17,12 +18,12 @@ class Token(Quote):
 
     base_symbol: str = Field(..., description="Le symbole de la devise de base")
 
-    def __init__(self, amount: float, base_symbol: str, _from_factory: bool = False):
+    def __init__(self, amount: Union[Decimal, float, int, str], base_symbol: str, _from_factory: bool = False):
         """
         Initialise une instance de Token.
 
         Paramètres:
-        amount (float): Le montant du token.
+        amount (Decimal|float|int|str): Le montant du token.
         base_symbol (str): Le symbole de la devise de base (ex: BTC).
         _from_factory (bool): Indique si l'instance est créée via une factory (interne).
 
@@ -32,7 +33,7 @@ class Token(Quote):
         if not _from_factory:
             raise TypeError("Use BotPair.create_token() to instantiate Token.")
 
-        bot_assert(amount, float)
+        bot_assert(amount, (Decimal, float, int, str))
 
         # Appelle le constructeur parent avec base_symbol
         super().__init__(amount, _from_factory=_from_factory, base_symbol=base_symbol)
@@ -63,7 +64,7 @@ class Token(Quote):
         Compare si l'instance actuelle est inférieure à une autre instance de Token ou un nombre.
 
         Paramètres:
-        other (Token ou float): L'autre montant à comparer.
+        other (Token ou Decimal|float|int): L'autre montant à comparer.
 
         Retourne:
         bool: True si l'instance est inférieure, False sinon.
@@ -73,10 +74,10 @@ class Token(Quote):
         """
         if isinstance(other, Token):
             return self.amount < other.amount
-        elif isinstance(other, float):
-            return self.amount < other
+        elif isinstance(other, (Decimal, float, int)):
+            return self.amount < Decimal(str(other))
         raise TypeError(
-            f"L'opérande doit être une instance de {self.base_symbol} ou un nombre (float)"
+            f"L'opérande doit être une instance de {self.base_symbol} ou un nombre"
         )
 
     def __add__(self, other):
@@ -100,13 +101,14 @@ class Token(Quote):
         Gère l'addition lorsque Token est à droite de l'opérateur (+).
 
         Paramètres:
-        other (int, float): L'autre opérande.
+        other (Decimal|int|float): L'autre opérande.
 
         Retourne:
         Token: Une nouvelle instance représentant la somme.
         """
-        if isinstance(other, (int, float)):
-            return Token(self.amount + other, self.base_symbol, _from_factory=True)
+        if isinstance(other, (Decimal, int, float)):
+            other_decimal = other if isinstance(other, Decimal) else Decimal(str(other))
+            return Token(self.amount + other_decimal, self.base_symbol, _from_factory=True)
         return NotImplemented
 
     def __sub__(self, other):
@@ -139,30 +141,34 @@ class Token(Quote):
         Multiplie l'instance de Token par un nombre ou une instance de Price.
 
         Paramètres:
-        other (float ou Price): L'opérande à multiplier.
+        other (Decimal|float|int ou Price): L'opérande à multiplier.
 
         Retourne:
-        Token ou Asset: Si 'other' est un float, retourne un Token.
+        Token ou Asset: Si 'other' est un nombre, retourne un Token.
                         Si 'other' est un Price, retourne un montant en Asset.
 
         Exception:
-        TypeError: Si 'other' n'est ni un float ni une instance de Price.
+        TypeError: Si 'other' n'est ni un nombre ni une instance de Price.
         """
         from python_trading_objects.quotes.asset import USD, Asset
         from python_trading_objects.quotes.price import Price
 
-        bot_assert(other, (float, Price))
+        bot_assert(other, (Decimal, float, int, Price))
 
-        if isinstance(other, float):
+        if isinstance(other, (Decimal, float, int)):
+            if not isinstance(other, Decimal):
+                other = Decimal(str(other))
             return Token(self.amount * other, self.base_symbol, _from_factory=True)
         if isinstance(other, Price):
+            # Convert price to Decimal if it's a float
+            price_decimal = other.price if isinstance(other.price, Decimal) else Decimal(str(other.price))
             # Return USD for backward compatibility when quote is USD
             if other.get_quote() == "USD":
                 return USD(
-                    self.amount * other.price, other.get_quote(), _from_factory=True
+                    self.amount * price_decimal, other.get_quote(), _from_factory=True
                 )
             return Asset(
-                self.amount * other.price, other.get_quote(), _from_factory=True
+                self.amount * price_decimal, other.get_quote(), _from_factory=True
             )
         return NotImplemented
 
@@ -171,25 +177,26 @@ class Token(Quote):
         Divise l'instance de Token par un nombre ou une autre instance de Token.
 
         Paramètres:
-        other (int, float ou Token): Le diviseur.
+        other (Decimal|int|float ou Token): Le diviseur.
 
         Retourne:
-        Token ou float: Si 'other' est un nombre, retourne un nouveau Token.
-                        Si 'other' est un Token, retourne un float (le ratio).
+        Token ou Decimal: Si 'other' est un nombre, retourne un nouveau Token.
+                          Si 'other' est un Token, retourne un Decimal (le ratio).
 
         Exception:
-        TypeError: Si 'other' n'est pas un int, float ou Token.
+        TypeError: Si 'other' n'est pas un nombre ou Token.
         ZeroDivisionError: Si une division par zéro est tentée.
         """
-        if isinstance(other, float):
-            if other == 0:
+        if isinstance(other, (Decimal, float, int)):
+            other_decimal = other if isinstance(other, Decimal) else Decimal(str(other))
+            if other_decimal == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
-            return Token(self.amount / other, self.base_symbol, _from_factory=True)
+            return Token(self.amount / other_decimal, self.base_symbol, _from_factory=True)
         if isinstance(other, Token):
             if other.amount == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return self.amount / other.amount
-        raise TypeError(f"L'opérande doit être un int, float ou {self.base_symbol}")
+        raise TypeError(f"L'opérande doit être un nombre ou {self.base_symbol}")
 
     def to_dict(self):
         """Convertit l'objet en dictionnaire avec les float en string pour préserver la précision."""
