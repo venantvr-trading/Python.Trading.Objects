@@ -71,6 +71,7 @@ def test_price_truediv_by_float(bot_pair):
 def test_price_truediv_by_price(bot_pair):
     """Test division of a Price by another Price."""
     from decimal import Decimal
+
     price1 = bot_pair.create_price(20000.0)
     price2 = bot_pair.create_price(5000.0)
     result = price1 / price2
