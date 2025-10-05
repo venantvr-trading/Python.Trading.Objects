@@ -280,13 +280,13 @@ class USD(Asset):
     """Alias for compatibility with legacy code."""
 
     def __init__(
-            self, amount: float, quote_symbol: str = "USD", _from_factory: bool = False
+            self, amount: Union[Decimal, float, int, str], quote_symbol: str = "USD", _from_factory: bool = False
     ):
         """
         Initializes a USD instance (legacy compatibility).
 
         Parameters:
-        amount (float): The USD amount.
+        amount (Decimal|float|int|str): The USD amount.
         quote_symbol (str): The quote symbol (default: USD).
         _from_factory (bool): Indicates if instance is created via factory.
         """

@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from typing import Any, Dict
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
@@ -20,13 +21,13 @@ class Price(BaseModel):
         extra="forbid",
     )
 
-    price: float = Field(..., description="Le montant du prix")
+    price: Decimal = Field(..., description="Le montant du prix")
     base_symbol: str = Field(..., description="Le symbole de la devise de base")
     quote_symbol: str = Field(..., description="Le symbole de la devise de cotation")
 
     def __init__(
             self,
-            price: float,
+            price: Decimal,
             base_symbol: str,
             quote_symbol: str,
             _from_factory: bool = False,
@@ -35,7 +36,7 @@ class Price(BaseModel):
         Initialise une instance de Price.
 
         Paramètres:
-        price (float): Le montant du prix.
+        price (Decimal): Le montant du prix.
         base_symbol (str): Le symbole de la devise de base (ex: BTC).
         quote_symbol (str): Le symbole de la devise de cotation (ex: USD).
         _from_factory (bool): Indique si l'instance est créée via une factory (interne).
@@ -46,19 +47,19 @@ class Price(BaseModel):
         if not _from_factory:
             raise TypeError("Use BotPair.create_price() to instantiate Price.")
 
-        bot_assert(price, (float, int))
+        bot_assert(price, (Decimal, float, int))
 
         super().__init__(
-            price=float(price), base_symbol=base_symbol, quote_symbol=quote_symbol
+            price=Decimal(str(price)), base_symbol=base_symbol, quote_symbol=quote_symbol
         )
 
     @field_validator("price", mode="before")
     @classmethod
     def validate_price(cls, v):
         """Valide que le prix est un nombre."""
-        if not isinstance(v, (float, int)):
-            raise TypeError(f"Price must be float or int, got {type(v)}")
-        return float(v)
+        if not isinstance(v, (Decimal, float, int, str)):
+            raise TypeError(f"Price must be Decimal, float, int or str, got {type(v)}")
+        return Decimal(str(v))
 
     @field_validator("base_symbol", "quote_symbol")
     @classmethod
@@ -141,7 +142,7 @@ class Price(BaseModel):
             if other == 0:
                 raise ZeroDivisionError("Division par zéro interdite")
             return Price(
-                self.price / other,
+                self.price / Decimal(str(other)),
                 self.base_symbol,
                 self.quote_symbol,
                 _from_factory=True,
@@ -173,17 +174,14 @@ class Price(BaseModel):
 
         if isinstance(other, (int, float)):
             return Price(
-                self.price * other,
+                self.price * Decimal(str(other)),
                 self.base_symbol,
                 self.quote_symbol,
                 _from_factory=True,
             )
         if isinstance(other, Token):
-            # Convert price to Decimal if needed to multiply with Token.amount (which is Decimal)
-            from decimal import Decimal
-
-            price_decimal = self.price if isinstance(self.price, Decimal) else Decimal(str(self.price))
-            amount = price_decimal * other.amount
+            # Price is now Decimal, can multiply directly with Token.amount
+            amount = self.price * other.amount
             # Return USD for backward compatibility when quote is USD
             if self.quote_symbol == "USD":
                 return USD(amount, self.quote_symbol, _from_factory=True)
