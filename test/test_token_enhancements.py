@@ -1,9 +1,11 @@
 """Unit tests for enhanced Token methods"""
-import pytest
 from decimal import Decimal
-from python_trading_objects.quotes.pair import BotPair
-from python_trading_objects.quotes.coin import Token
+
+import pytest
+
 from python_trading_objects.quotes.asset import Asset
+from python_trading_objects.quotes.coin import Token
+from python_trading_objects.quotes.pair import BotPair
 
 
 class TestTokenEnhancements:

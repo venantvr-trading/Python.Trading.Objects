@@ -3,9 +3,9 @@
 Manual integration test for the migration.
 Tests TradingPosition with real-world scenarios.
 """
-from python_trading_objects.quotes.pair import BotPair
-from python_trading_objects.domain.trading_position import TradingPosition
 from python_trading_objects.domain.position_calculator import PositionCalculator
+from python_trading_objects.domain.trading_position import TradingPosition
+from python_trading_objects.quotes.pair import BotPair
 
 
 def test_basic_trading_scenario():
@@ -289,5 +289,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ TEST FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         exit(1)

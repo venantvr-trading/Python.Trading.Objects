@@ -1,9 +1,10 @@
 """Unit tests for TradingPosition domain model"""
-import pytest
 from datetime import datetime
-from decimal import Decimal
-from python_trading_objects.quotes.pair import BotPair
+
+import pytest
+
 from python_trading_objects.domain.trading_position import TradingPosition
+from python_trading_objects.quotes.pair import BotPair
 
 
 class TestTradingPosition:

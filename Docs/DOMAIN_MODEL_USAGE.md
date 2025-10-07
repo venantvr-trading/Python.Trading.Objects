@@ -39,6 +39,7 @@ if position.should_sell_at(current_price):
 `TradingPosition` encapsulates **all** business logic related to a trading position.
 
 **When to use:**
+
 - Inside your application/agents for business logic
 - When you need to make trading decisions
 - When calculating profits, ROI, or position value
@@ -146,6 +147,7 @@ restored = TradingPosition.from_dict(data, bot_pair)
 ```
 
 **Use cases:**
+
 - Storing in database
 - Publishing events
 - API responses
@@ -399,6 +401,7 @@ class PositionDTO(BaseModel):
 ```
 
 **Separation of concerns:**
+
 - `TradingPosition` = Domain logic (business rules, calculations)
 - `PositionDTO` = Infrastructure (serialization, API, events)
 
@@ -419,6 +422,7 @@ updated_position = position.adjust_expected_sale_price(new_price)
 ```
 
 **Why?**
+
 - Prevents accidental mutations
 - Makes code more predictable
 - Enables event sourcing

@@ -23,6 +23,7 @@ return Price(avg_price, ...)  # float -> Decimal
 ```
 
 **Issues:**
+
 - `pos.cost_basis.amount` is already `Decimal`
 - Converting to `float` loses precision
 - Converting back to `Decimal` doesn't restore precision
@@ -51,6 +52,7 @@ return Price(avg_price, ...)  # Decimal -> Price (no conversion)
 ### 1. PositionCalculator.total_value()
 
 **Before:**
+
 ```python
 total = sum(
     float(pos.calculate_gross_value(current_price).amount)  # ❌
@@ -59,6 +61,7 @@ total = sum(
 ```
 
 **After:**
+
 ```python
 total = sum(
     pos.calculate_gross_value(current_price).amount  # ✅ Keep Decimal
@@ -71,11 +74,13 @@ total = sum(
 ### 2. PositionCalculator.total_cost_basis()
 
 **Before:**
+
 ```python
 total = sum(float(pos.cost_basis.amount) for pos in positions)  # ❌
 ```
 
 **After:**
+
 ```python
 total = sum(pos.cost_basis.amount for pos in positions)  # ✅ Keep Decimal
 ```
@@ -85,6 +90,7 @@ total = sum(pos.cost_basis.amount for pos in positions)  # ✅ Keep Decimal
 ### 3. PositionCalculator.weighted_average_price()
 
 **Before:**
+
 ```python
 total_cost = 0.0  # ❌ float
 total_tokens = 0.0  # ❌ float
@@ -98,6 +104,7 @@ return Price(avg_price, ...)
 ```
 
 **After:**
+
 ```python
 from decimal import Decimal
 
@@ -117,6 +124,7 @@ return Price(avg_price, ...)  # ✅ Decimal -> Price
 ### 4. PositionCalculator.aggregate_roi()
 
 **Before:**
+
 ```python
 total_cost = float(PositionCalculator.total_cost_basis(positions).amount)  # ❌
 total_value = float(PositionCalculator.total_value(positions, current_price).amount)  # ❌
@@ -125,6 +133,7 @@ return ((total_value - total_cost) / total_cost) * 100.0  # float math
 ```
 
 **After:**
+
 ```python
 total_cost = PositionCalculator.total_cost_basis(positions).amount  # ✅ Keep Decimal
 total_value = PositionCalculator.total_value(positions, current_price).amount  # ✅ Keep Decimal
@@ -139,6 +148,7 @@ return float(((total_value - total_cost) / total_cost) * 100)  # ✅ Decimal mat
 ### 5. TradingPosition.apply_trailing_stop()
 
 **Before:**
+
 ```python
 new_expected = self.pair.create_price(
     float(current_price.price) * (1 - trail_pct)  # ❌ float math
@@ -146,6 +156,7 @@ new_expected = self.pair.create_price(
 ```
 
 **After:**
+
 ```python
 from decimal import Decimal
 
@@ -155,6 +166,7 @@ new_expected = self.pair.create_price(
 ```
 
 **Why `Decimal(str(1 - trail_pct))`?**
+
 - `trail_pct` is a `float` parameter (e.g., `0.02`)
 - `1 - trail_pct` is float math (e.g., `0.98`)
 - `Decimal(str(0.98))` converts safely to Decimal
@@ -176,6 +188,7 @@ def to_dict(self) -> Dict:
 ```
 
 **Why this is correct:**
+
 - JSON doesn't support Decimal type
 - This is a **boundary conversion** (leaving the domain)
 - When deserializing with `from_dict()`, we convert back
@@ -190,6 +203,7 @@ def from_dict(cls, data: Dict, bot_pair: BotPair):
 ```
 
 **Why this is correct:**
+
 - Data comes from JSON (already float)
 - `bot_pair.create_price()` accepts float and converts to Decimal internally
 - This is a **boundary conversion** (entering the domain)
@@ -206,6 +220,7 @@ def calculate_roi(self, sale_price: Price) -> float:
 ```
 
 **Why this is correct:**
+
 - Return type is `float` (ROI is a dimensionless percentage)
 - All math is done in Decimal first
 - Only convert to float at the very end
@@ -218,9 +233,9 @@ def calculate_roi(self, sale_price: Price) -> float:
 
 ```python
 # Example: 3 positions
-pos1: cost = 5000.10 (Decimal)
-pos2: cost = 2600.20 (Decimal)
-pos3: cost = 7200.30 (Decimal)
+pos1: cost = 5000.10(Decimal)
+pos2: cost = 2600.20(Decimal)
+pos3: cost = 7200.30(Decimal)
 
 # Conversion chain:
 total = 0.0  # float
@@ -257,25 +272,33 @@ price = Price(avg, ...)  # Decimal -> Price (no conversion)
 ## ✅ Validation
 
 ### Tests Pass
+
 ```bash
 $ pytest test/test_position_calculator.py test/test_trading_position.py -v
 ====================== 30 passed in 0.09s ======================
 ```
 
 ### Integration Tests Pass
+
 ```bash
 $ python test_integration_manual.py
 ✅ ALL INTEGRATION TESTS PASSED!
 ```
 
 ### Precision Verified
+
 ```python
 # Example from integration test
-Portfolio (3 positions):
-  Total cost: $15,300.00 ✅
-  Total value: $15,900.00 ✅
-  Weighted avg: $51,000.00 ✅
-  Aggregate ROI: 3.92% ✅
+Portfolio(3
+positions):
+Total
+cost: $15, 300.00 ✅
+Total
+value: $15, 900.00 ✅
+Weighted
+avg: $51, 000.00 ✅
+Aggregate
+ROI: 3.92 % ✅
 ```
 
 ---
@@ -283,6 +306,7 @@ Portfolio (3 positions):
 ## 🎯 Best Practices
 
 ### ✅ DO
+
 1. **Keep Decimal throughout calculations**
    ```python
    total = Decimal("0")
@@ -308,6 +332,7 @@ Portfolio (3 positions):
    ```
 
 ### ❌ DON'T
+
 1. **Convert Decimal to float for calculations**
    ```python
    # ❌ BAD

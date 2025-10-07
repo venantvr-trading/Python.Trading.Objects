@@ -1,9 +1,11 @@
 """Test that Decimal types (not float) are used throughout calculations"""
-import pytest
 from decimal import Decimal
-from python_trading_objects.quotes.pair import BotPair
-from python_trading_objects.domain.trading_position import TradingPosition
+
+import pytest
+
 from python_trading_objects.domain.position_calculator import PositionCalculator
+from python_trading_objects.domain.trading_position import TradingPosition
+from python_trading_objects.quotes.pair import BotPair
 
 
 class TestDecimalNotFloat:

@@ -1,8 +1,9 @@
 """Unit tests for PositionCalculator"""
 import pytest
-from python_trading_objects.quotes.pair import BotPair
-from python_trading_objects.domain.trading_position import TradingPosition
+
 from python_trading_objects.domain.position_calculator import PositionCalculator
+from python_trading_objects.domain.trading_position import TradingPosition
+from python_trading_objects.quotes.pair import BotPair
 
 
 class TestPositionCalculator:

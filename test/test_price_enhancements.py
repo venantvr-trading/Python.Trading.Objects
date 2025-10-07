@@ -1,6 +1,8 @@
 """Unit tests for enhanced Price methods"""
-import pytest
 from decimal import Decimal
+
+import pytest
+
 from python_trading_objects.quotes.pair import BotPair
 from python_trading_objects.quotes.price import Price
 
