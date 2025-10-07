@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import json
 from decimal import Decimal
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, TYPE_CHECKING
 
 from pydantic import Field, model_serializer
 
 from python_trading_objects.quotes.assertion import bot_assert
 from python_trading_objects.quotes.quote import Quote
+
+if TYPE_CHECKING:
+    from python_trading_objects.quotes.price import Price
+    from python_trading_objects.quotes.asset import Asset
 
 
 class Token(Quote):
@@ -136,7 +142,7 @@ class Token(Quote):
         """
         return Token(-self.amount, self.base_symbol, _from_factory=True)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Decimal | float | int | Price) -> Token | Asset:
         """
         Multiplie l'instance de Token par un nombre ou une instance de Price.
 
@@ -205,3 +211,41 @@ class Token(Quote):
     def to_json(self):
         """Convertit l'objet en JSON."""
         return json.dumps(self.to_dict())
+
+    def value_at(self, price: Price) -> Asset:
+        """
+        Calculate value of tokens at given price.
+
+        Args:
+            price: Price per token
+
+        Returns:
+            Asset representing total value
+        """
+        from python_trading_objects.quotes.price import Price
+
+        if not isinstance(price, Price):
+            raise TypeError("price must be an instance of Price")
+
+        # Use existing multiplication logic
+        return self * price
+
+    def split(self, ratio: float) -> tuple[Token, Token]:
+        """
+        Split tokens into two parts by ratio.
+
+        Args:
+            ratio: Ratio for first part (0.3 = 30%)
+
+        Returns:
+            Tuple of (first_part, second_part)
+        """
+        if not 0 <= ratio <= 1:
+            raise ValueError("ratio must be between 0 and 1")
+
+        first_amount = self.amount * Decimal(str(ratio))
+        second_amount = self.amount * Decimal(str(1 - ratio))
+        return (
+            Token(first_amount, self.base_symbol, _from_factory=True),
+            Token(second_amount, self.base_symbol, _from_factory=True)
+        )

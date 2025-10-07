@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import json
 from decimal import Decimal
-from typing import Any, Dict
+from typing import Any, Dict, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
 from python_trading_objects.quotes.assertion import bot_assert
+
+if TYPE_CHECKING:
+    from python_trading_objects.quotes.asset import Asset
+    from python_trading_objects.quotes.coin import Token
 
 
 class Price(BaseModel):
@@ -153,7 +159,7 @@ class Price(BaseModel):
             return self.price / other.price
         raise TypeError(f"L'opérande doit être un int, float ou Price")
 
-    def __mul__(self, other):
+    def __mul__(self, other: int | float | Token) -> Price | Asset:
         """
         Multiplie Price par un nombre ou une instance de Token.
 
@@ -286,3 +292,54 @@ class Price(BaseModel):
         bool: True si le prix est < 0, False sinon.
         """
         return self.price < 0
+
+    def is_within_percentage(self, target: Price, tolerance_pct: float) -> bool:
+        """
+        Check if price is within tolerance % of target.
+
+        Args:
+            target: Target price to compare
+            tolerance_pct: Tolerance as decimal (0.02 = 2%)
+
+        Returns:
+            True if within tolerance
+        """
+        if target.price == 0:
+            return False
+        delta = abs(self.price - target.price) / target.price
+        return delta <= tolerance_pct
+
+    def apply_percentage(self, pct: float) -> Price:
+        """
+        Apply percentage change to price.
+
+        Args:
+            pct: Percentage as decimal (0.02 = +2%, -0.02 = -2%)
+
+        Returns:
+            New Price with percentage applied
+        """
+        new_price = self.price * (1 + Decimal(str(pct)))
+        return Price(new_price, self.base_symbol, self.quote_symbol, _from_factory=True)
+
+    def distance_from(self, other: Price) -> float:
+        """
+        Calculate percentage distance from another price.
+
+        Args:
+            other: Price to compare to
+
+        Returns:
+            Percentage difference (positive if self > other)
+        """
+        if other.price == 0:
+            return float('inf')
+        return float(((self.price - other.price) / other.price) * 100)
+
+    @staticmethod
+    def midpoint(buy_price: Price, sell_price: Price) -> Price:
+        """Calculate midpoint between two prices"""
+        if buy_price.base_symbol != sell_price.base_symbol or buy_price.quote_symbol != sell_price.quote_symbol:
+            raise ValueError("Cannot calculate midpoint for prices with different symbols")
+        avg = (buy_price.price + sell_price.price) / 2
+        return Price(avg, buy_price.base_symbol, buy_price.quote_symbol, _from_factory=True)
