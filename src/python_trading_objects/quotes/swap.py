@@ -2,8 +2,9 @@
 Unified swap/trade abstractions for CEX and DEX operations.
 """
 
+from decimal import Decimal
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
@@ -37,7 +38,7 @@ class SwapRequest(BaseModel):
 
     from_symbol: str = Field(..., description="Symbol of the asset to swap from")
     to_symbol: str = Field(..., description="Symbol of the asset to swap to")
-    amount: float = Field(..., description="Amount to swap", ge=0)
+    amount: Decimal = Field(..., description="Amount to swap", ge=0)
     swap_type: SwapType = Field(
         default=SwapType.MARKET, description="Type of swap (market, limit, etc.)"
     )
@@ -51,7 +52,7 @@ class SwapRequest(BaseModel):
             self,
             from_symbol: str,
             to_symbol: str,
-            amount: float,
+            amount: Union[Decimal, float, str, int],
             swap_type: SwapType = SwapType.MARKET,
             **data
     ):
@@ -74,7 +75,7 @@ class SwapRequest(BaseModel):
         super().__init__(
             from_symbol=from_symbol,
             to_symbol=to_symbol,
-            amount=amount,
+            amount=Decimal(str(amount)) if not isinstance(amount, Decimal) else amount,
             swap_type=swap_type,
             pair=pair,
             reverse_pair=reverse_pair,
@@ -155,25 +156,25 @@ class SwapQuote(BaseModel):
         extra="forbid",
     )
 
-    rate: float = Field(
+    rate: Decimal = Field(
         ..., description="Exchange rate (how many 'to' assets per 'from' asset)"
     )
     from_symbol: str = Field(..., description="Symbol of the asset to swap from")
     to_symbol: str = Field(..., description="Symbol of the asset to swap to")
-    fees: float = Field(default=0.0, description="Total fees (percentage or absolute)")
-    slippage: float = Field(default=0.0, description="Expected slippage (DEX)")
-    gas_estimate: Optional[float] = Field(
+    fees: Decimal = Field(default=Decimal("0"), description="Total fees (percentage or absolute)")
+    slippage: Decimal = Field(default=Decimal("0"), description="Expected slippage (DEX)")
+    gas_estimate: Optional[Decimal] = Field(
         default=None, description="Estimated gas cost (DEX only)"
     )
 
     def __init__(
             self,
-            rate: float,
+            rate: Union[Decimal, float, str, int],
             from_symbol: str,
             to_symbol: str,
-            fees: float = 0.0,
-            slippage: float = 0.0,
-            gas_estimate: Optional[float] = None,
+            fees: Union[Decimal, float, str, int] = 0,
+            slippage: Union[Decimal, float, str, int] = 0,
+            gas_estimate: Optional[Union[Decimal, float, str, int]] = None,
     ):
         """
         Creates a swap quote.
@@ -187,12 +188,12 @@ class SwapQuote(BaseModel):
         gas_estimate: Estimated gas cost (DEX only)
         """
         super().__init__(
-            rate=rate,
+            rate=Decimal(str(rate)) if not isinstance(rate, Decimal) else rate,
             from_symbol=from_symbol,
             to_symbol=to_symbol,
-            fees=fees,
-            slippage=slippage,
-            gas_estimate=gas_estimate,
+            fees=Decimal(str(fees)) if not isinstance(fees, Decimal) else fees,
+            slippage=Decimal(str(slippage)) if not isinstance(slippage, Decimal) else slippage,
+            gas_estimate=Decimal(str(gas_estimate)) if gas_estimate is not None and not isinstance(gas_estimate, Decimal) else gas_estimate,
         )
 
     @field_validator("from_symbol", "to_symbol")
@@ -211,11 +212,12 @@ class SwapQuote(BaseModel):
             raise ValueError("Value must be non-negative")
         return v
 
-    def estimate_output(self, input_amount: float) -> float:
+    def estimate_output(self, input_amount: Union[Decimal, float, str, int]) -> Decimal:
         """Estimates output amount for given input."""
-        gross_output = input_amount * self.rate
+        amount = Decimal(str(input_amount)) if not isinstance(input_amount, Decimal) else input_amount
+        gross_output = amount * self.rate
         # Apply fees and slippage
-        net_output = gross_output * (1 - self.fees) * (1 - self.slippage)
+        net_output = gross_output * (Decimal("1") - self.fees) * (Decimal("1") - self.slippage)
         return net_output
 
     @model_serializer
@@ -253,30 +255,30 @@ class SwapResult(BaseModel):
     )
 
     request: SwapRequest = Field(..., description="Original swap request")
-    executed_rate: float = Field(..., description="Actual execution rate")
-    from_amount: float = Field(..., description="Amount swapped from")
-    to_amount: float = Field(..., description="Amount received")
-    fees_paid: float = Field(..., description="Total fees paid")
+    executed_rate: Decimal = Field(..., description="Actual execution rate")
+    from_amount: Decimal = Field(..., description="Amount swapped from")
+    to_amount: Decimal = Field(..., description="Amount received")
+    fees_paid: Decimal = Field(..., description="Total fees paid")
     transaction_id: str = Field(
         ..., description="Exchange order ID or blockchain tx hash"
     )
     timestamp: float = Field(..., description="Execution timestamp")
-    gas_used: Optional[float] = Field(
+    gas_used: Optional[Decimal] = Field(
         default=None, description="Actual gas used (DEX only)"
     )
-    expected_rate: float = Field(default=0.0, description="Expected rate")
-    slippage: float = Field(default=0.0, description="Calculated slippage")
+    expected_rate: Decimal = Field(default=Decimal("0"), description="Expected rate")
+    slippage: Decimal = Field(default=Decimal("0"), description="Calculated slippage")
 
     def __init__(
             self,
             request: SwapRequest,
-            executed_rate: float,
-            from_amount: float,
-            to_amount: float,
-            fees_paid: float,
+            executed_rate: Union[Decimal, float, str, int],
+            from_amount: Union[Decimal, float, str, int],
+            to_amount: Union[Decimal, float, str, int],
+            fees_paid: Union[Decimal, float, str, int],
             transaction_id: str,
             timestamp: float,
-            gas_used: Optional[float] = None,
+            gas_used: Optional[Union[Decimal, float, str, int]] = None,
             **data
     ):
         """
@@ -292,22 +294,29 @@ class SwapResult(BaseModel):
         timestamp: Execution timestamp
         gas_used: Actual gas used (DEX only)
         """
+        # Convert to Decimal
+        executed_rate_dec = Decimal(str(executed_rate)) if not isinstance(executed_rate, Decimal) else executed_rate
+        from_amount_dec = Decimal(str(from_amount)) if not isinstance(from_amount, Decimal) else from_amount
+        to_amount_dec = Decimal(str(to_amount)) if not isinstance(to_amount, Decimal) else to_amount
+        fees_paid_dec = Decimal(str(fees_paid)) if not isinstance(fees_paid, Decimal) else fees_paid
+        gas_used_dec = Decimal(str(gas_used)) if gas_used is not None and not isinstance(gas_used, Decimal) else gas_used
+
         # Calculate slippage from expected
-        expected_rate = to_amount / from_amount if from_amount > 0 else 0
-        if expected_rate > 0 and executed_rate > 0:
-            slippage = abs((expected_rate - executed_rate) / executed_rate)
+        expected_rate = to_amount_dec / from_amount_dec if from_amount_dec > 0 else Decimal("0")
+        if expected_rate > 0 and executed_rate_dec > 0:
+            slippage = abs((expected_rate - executed_rate_dec) / executed_rate_dec)
         else:
-            slippage = 0
+            slippage = Decimal("0")
 
         super().__init__(
             request=request,
-            executed_rate=executed_rate,
-            from_amount=from_amount,
-            to_amount=to_amount,
-            fees_paid=fees_paid,
+            executed_rate=executed_rate_dec,
+            from_amount=from_amount_dec,
+            to_amount=to_amount_dec,
+            fees_paid=fees_paid_dec,
             transaction_id=transaction_id,
             timestamp=timestamp,
-            gas_used=gas_used,
+            gas_used=gas_used_dec,
             expected_rate=expected_rate,
             slippage=slippage,
             **data

@@ -3,6 +3,7 @@ Unit tests for the Swap classes (SwapRequest, SwapQuote, SwapResult).
 """
 
 import time
+from decimal import Decimal
 
 import pytest
 
@@ -111,11 +112,11 @@ class TestSwapQuote:
             slippage=0.002,  # 0.2%
         )
 
-        assert quote.rate == 25000.0
+        assert quote.rate == Decimal("25000.0")
         assert quote.from_symbol == "USDC"
         assert quote.to_symbol == "BTC"
-        assert quote.fees == 0.001
-        assert quote.slippage == 0.002
+        assert quote.fees == Decimal("0.001")
+        assert quote.slippage == Decimal("0.002")
         assert quote.gas_estimate is None
 
     def test_swap_quote_with_gas(self):
@@ -147,7 +148,7 @@ class TestSwapQuote:
         # Expected: 10000 * (1/25000) * (1-0.001) * (1-0.002)
         # = 10000 * 0.00004 * 0.999 * 0.998
         # ≈ 0.3988
-        assert abs(output - 0.3988) < 0.0001
+        assert abs(output - Decimal("0.3988")) < Decimal("0.0001")
 
     def test_swap_quote_to_dict(self):
         """Test converting swap quote to dictionary."""
@@ -187,10 +188,10 @@ class TestSwapResult:
         )
 
         assert result.request == request
-        assert result.executed_rate == 1 / 24950.0
-        assert result.from_amount == 10000.0
-        assert result.to_amount == 0.4008
-        assert result.fees_paid == 10.0
+        assert abs(result.executed_rate - Decimal(str(1 / 24950.0))) < Decimal("0.00000001")
+        assert result.from_amount == Decimal("10000.0")
+        assert result.to_amount == Decimal("0.4008")
+        assert result.fees_paid == Decimal("10.0")
         assert result.transaction_id == "0x123abc"
         assert result.gas_used is None
 
@@ -209,7 +210,7 @@ class TestSwapResult:
             gas_used=0.005,  # 0.005 ETH in gas
         )
 
-        assert result.gas_used == 0.005
+        assert result.gas_used == Decimal("0.005")
 
     def test_slippage_calculation(self):
         """Test that slippage is calculated correctly."""
@@ -231,7 +232,7 @@ class TestSwapResult:
         # Actual rate = 0.395/10000 = 0.0000395
         # Expected rate = 0.00004
         # Slippage = (0.0000395 - 0.00004) / 0.00004 = -0.0125 = 1.25%
-        assert abs(result.slippage - 0.0125) < 0.001
+        assert abs(result.slippage - Decimal("0.0125")) < Decimal("0.001")
 
     def test_swap_result_to_dict(self):
         """Test converting swap result to dictionary."""
@@ -306,7 +307,7 @@ class TestEdgeCases:
     def test_very_small_amounts(self):
         """Test swaps with very small amounts."""
         swap = SwapRequest("BTC", "USDC", 0.00000001)  # 1 satoshi
-        assert swap.amount == 0.00000001
+        assert swap.amount == Decimal("0.00000001")
 
         quote = SwapQuote(25000.0, "BTC", "USDC", 0.001, 0.0)
         output = quote.estimate_output(0.00000001)
